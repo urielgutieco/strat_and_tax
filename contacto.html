@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro con Login - Strat & Tax</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 VARIABLES DE ESTILO GLOBAL */
+
+        :root {
+            --bg: #9c9c9cce;
+            /* Gris Claro */
+            --accent: #323c47;
+            /* Azul navy */
+            --accent-light: #565758;
+            /* Azul navy más claro */
+            --muted: #515457;
+            /* Gris medio */
+            --panel: #bbbbbb;
+            /* Blanco para paneles/formularios */
+            --border: #70859a;
+            /* Gris claro para bordes */
+            --shadow: 0 4px 12px rgba(71, 82, 199, 0.1);
+            /* Sombra sutil */
+            --radius: 8px;
+            /* Bordes redondeados */
+            --font-main: "Inter", system-ui, sans-serif;
+            --color-secondary: #D4AF37;
+            /* Dorado */
+        }
+
+        /* 💻 ESTILOS GENERALES Y DEL HEADER/FOOTER */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: var(--bg);
+            color: var(--accent);
+            font-family: var(--font-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--accent);
+            color: #001f3fb3;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 100px;
+            width: auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 10;
+            padding: 0;
+        }
+
+        nav a {
+            color: #ffffff75;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--color-secondary);
+        }
+
+        footer {
+            background: var(--accent);
+            color: #c4c1c1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 📝 ESTILOS DE CONTENIDO Y FORMULARIOS */
+        .page-content {
+            padding: 60px 20px; /* Incrementado para más espacio vertical */
+            min-height: calc(100vh - 140px);
+            /* Ajuste para que el footer quede abajo */
+        }
+
+        .card {
+            background: var(--panel);
+            /* Usar panel */
+            padding: 90px; /* Padding interior estándar de panel/tarjeta */
+            /* Se eliminan los anchos no funcionales (width: 200%) y se restablece el max-width */
+            width: 100%; 
+            /* Ajuste de ancho: 90% del contenedor */
+            max-width: 450px; 
+            /* Máximo ancho típico para formularios centrados */
+            margin: 0 auto; /* Centrar el contenedor horizontalmente */
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            /* Usar sombra */
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--accent);
+            /* Color coherente */
+            text-align: center;
+            margin-top: 0;
+            font-size: 2.5rem;
+            border-bottom: 3px solid var(--color-secondary);
+            /* Raya dorada */
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: var(--accent);
+            font-weight: 60;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        /* Estilo para los enlaces de navegación dentro del contenido */
+        .page-nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+            color: var(--accent-light);
+            /* Color coherente */
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            /* Ajuste de padding */
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: var(--accent);
+            background: #cdcece;
+            /* Fondo gris claro para campos */
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 16px;
+            /* Ajuste de padding */
+            width: 100%;
+            background: var(--accent);
+            /* Azul navy para botón de acción */
+            color: #e1dfdf;
+            border: none;
+            border-radius: var(--radius);
+            margin-top: 20px;
+            /* Más espacio */
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--accent-light);
+        }
+
+        #logout-btn {
+            background: #982626;
+            /* Rojo para logout */
+            width: 200px;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            display: none;
+            /* Oculto por defecto */
+        }
+
+        #logout-btn:hover {
+            background: #a12020;
+        }
+
+        /* Control de visibilidad para la funcionalidad de login */
+        #form-solicitud,
+        #logout-btn {
+            display: none;
+            /* Ocultar formulario de solicitud y botón de logout por defecto */
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="stratandtax.png" alt="Logo Strat & Tax" class="logo-img">
+                <div class="logo"></div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="#">Registro con Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-content">
+        <h1>🔐 Acceso a registro</h1>
+
+        <div style="text-align:center;" class="page-nav">
+            <a href="index.html">Inicio</a>
+            <a href="contacto.html">Registro</a>
+        </div>
+
+        <div id="login-card" class="card">
+            <h2>Iniciar Sesión</h2>
+            <label for="usuario">Usuario:</label>
+            <input type="text" id="usuario" placeholder="Ingresa tu usuario">
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" placeholder="Ingresa tu contraseña">
+
+            <button onclick="login()">Entrar</button>
+            <p style="color:red; display:none; margin-top:15px; text-align: center;" id="error-msg">
+                Usuario o contraseña incorrectos.
+            </p>
+        </div>
+        <div id="form-solicitud" class="card">
+            <h2>Generar registro.</h2>
+            <p style="text-align:center;"></p>
+            <div id="response-message" class="message" style="display: none;"></div>
+
+            <form id="solicitudForm" enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label for="servicio">Selecciona un servicio (*)</label>
+                    <select id="servicio" name="servicio" required>
+                        <option value="" disabled selected>--- Elige una opción ---</option>
+                        <option value="Servicios de construccion de unidades unifamiliares">Servicios de construccion de
+                            unidades unifamiliares</option>
+                        <option value="Servicios de reparacion o ampliacion o remodelacion de viviendas unifamiliares">
+                            Servicios de reparacion o ampliacion o remodelacion de viviendas unifamiliares</option>
+                        <option value="Servicio de remodelacion general de viviendas unifamiliares">Servicio de
+                            remodelacion general de viviendas unifamiliares</option>
+                        <option value="Servicios de reparacion de casas moviles en el sitio">Servicios de reparacion de
+                            casas moviles en el sitio</option>
+                        <option value="Servicios de construccion y reparacion de patios y terrazas">Servicios de
+                            construccion y reparacion de patios y terrazas</option>
+                        <option value="Servico de reparacion por daños ocasionados por fuego de viviendas unifamiliares">
+                            Servico de reparacion por daños ocasionados por fuego de viviendas unifamiliares</option>
+                        <option value="Servicio de construccion de casas unifamiliares nuevas">Servicio de construccion
+                            de casas unifamiliares nuevas</option>
+                        <option value="Servicio de instalacion de casas unifamiliares prefabricadas">Servicio de
+                            instalacion de casas unifamiliares prefabricadas</option>
+                        <option value="Servicio de construccion de casas en la ciudad o casas jardin unifamiliares nuevas">
+                            Servicio de construccion de casas en la ciudad o casas jardin unifamiliares nuevas</option>
+                        <option value="Dasarrollo urbano">Desarrollo urbano</option>
+                        <option value="Servicio de planificacion de la ordenacion urbana">Servicio de planificacion de
+                            la ordenacion urbana</option>
+                        <option value="Servicio de administracion de tierras urbanas">Servicio de administracion de
+                            tierras urbanas</option>
+                        <option value="Servicio de programacion de inversiones urbanas">Servicio de programacion de
+                            inversiones urbanas</option>
+                        <option value="Servicio de reestructuracion de barrios marginales">Servicio de reestructuracion
+                            de barrios marginales</option>
+                        <option value="Servicios de alumbrado urbano">Servicios de alumbrado urbano</option>
+                        <option value="Servicios de control o regulacion del desarrollo urbano">Servicios de control o
+                            regulacion del desarrollo urbano</option>
+                        <option value="Servicios de estandares o regulacion de edificios urbanos">Servicios de estandares
+                            o regulacion de edificios urbanos</option>
+                        <option value="Servicios comunitarios urbanos">Servicios comunitarios urbanos</option>
+                        <option value="Servicios de administracion o gestion de proyectos o programas urbanos">Servicios de
+                            administracion o gestion de proyectos o programas urbanos</option>
+                        <option value="Ingenieria civil">Ingenieria civil</option>
+                        <option value="Ingenieria de carreteras">Ingenieria de carreteras</option>
+                        <option value="Ingenieria deinfraestructura de instalaciones o fabricas">Ingenieria deinfraestructura
+                            de instalaciones o fabricas</option>
+                        <option value="Servicios de mantenimiento e instalacion de equipo pesado">Servicios de
+                            mantenimiento e instalacion de equipo pesado</option>
+                        <option value="Servicio de mantenimiento y reparacion de equipo pesado">Servicio de
+                            mantenimiento y reparacion de equipo pesado</option>
+                    </select>
+                    <input type="hidden" id="descripcion_del_servicio" name="descripcion_del_servicio">
+                </div>
+                <div class="form-group">
+                    <label for="razon_social">Razón Social (*)</label>
+                    <input type="text" id="razon_social" name="razon_social" required>
+                </div>
+                <div class="form-group">
+                    <label for="r_f_c">R.F.C (*)</label>
+                    <input type="text" id="r_f_c" name="r_f_c" required>
+                </div>
+                <div class="form-group">
+                    <label for="domicilio_del_cliente">Domicilio del Cliente</label>
+                    <input type="text" id="domicilio_del_cliente" name="domicilio_del_cliente">
+                </div>
+                <div class="form-group">
+                    <label for="telefono_del_cliente">Teléfono del Cliente</label>
+                    <input type="tel" id="telefono_del_cliente" name="telefono_del_cliente">
+                </div>
+                <div class="form-group">
+                    <label for="correo_del_cliente">Correo del Cliente (*)</label>
+                    <input type="email" id="correo_del_cliente" name="correo_del_cliente" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha_de_operacion">Fecha de Operación</label>
+                    <input type="date" id="fecha_de_operacion" name="fecha_de_operacion">
+                </div>
+                <div class="form-group">
+                    <label for="fecha_de_inicio_del_servicio">Fecha de Inicio Estimada</label>
+                    <input type="date" id="fecha_de_inicio_del_servicio" name="fecha_de_inicio_del_servicio">
+                </div>
+                <div class="form-group">
+                    <label for="fecha_de_conclusion_del_servicio">Fecha de Conclusión Estimada</label>
+                    <input type="date" id="fecha_de_conclusion_del_servicio" name="fecha_de_conclusion_del_servicio">
+                </div>
+                <div class="form-group">
+                    <label for="monto_de_la_operacion_sin_iva">Monto de la Operación (Sin IVA) (*)</label>
+                    <input type="number" id="monto_de_la_operacion_sin_iva" name="monto_de_la_operacion_sin_iva"
+                        step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="forma_de_pago">Forma de Pago</label>
+                    <input type="text" id="forma_de_pago" name="forma_de_pago">
+                </div>
+                <div class="form-group">
+                    <label for="cantidad">Cantidad de Unidades</label>
+                    <input type="number" id="cantidad" name="cantidad" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="numero_de_contrato">Número de Contrato</label>
+                    <input type="text" id="numero_de_contrato" name="numero_de_contrato">
+                </div>
+                <div class="form-group">
+                    <label for="unidad">Unidad de Medida (Ej: Servicio, Hora, Documento)</label>
+                    <input type="text" id="unidad" name="unidad">
+                </div>
+                <div class="form-group">
+                    <label for="factura_relacionada_con_la_operacion">Factura Relacionada con la Operación</label>
+                    <input type="text" id="factura_relacionada_con_la_operacion"
+                        name="factura_relacionada_con_la_operacion">
+                </div>
+                <div class="form-group">
+                    <label for="nombre_completo_de_la_persona_que_firma_la_solicitud">Nombre Completo de la Persona que
+                        Firma (*)</label>
+                    <input type="text" id="nombre_completo_de_la_persona_que_firma_la_solicitud"
+                        name="nombre_completo_de_la_persona_que_firma_la_solicitud" required>
+                </div>
+                <div class="form-group">
+                    <label for="cargo_de_la_persona_que_firma_la_solicitud">Cargo de la Persona que Firma</label>
+                    <input type="text" id="cargo_de_la_persona_que_firma_la_solicitud"
+                        name="cargo_de_la_persona_que_firma_la_solicitud">
+                </div>
+                <div class="form-group">
+                    <label for="informe_si_cuenta_con_fotografias_videos_o_informacion_adicion">¿Cuenta con fotografías,
+                        videos o información adicional? (Describa)</label>
+                    <textarea id="informe_si_cuenta_con_fotografias_videos_o_informacion_adicion"
+                        name="informe_si_cuenta_con_fotografias_videos_o_informacion_adicion" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="comentarios">Comentarios Finales (Observaciones, notas)</label>
+                    <textarea id="comentarios" name="comentarios" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="imagen_usuario">Cargar imagen para insertar en Word</label>
+                    <input type="file" id="imagen_usuario" name="imagen_usuario" accept="image/*">
+                </div>
+
+                <button type="submit" class="btn-submit">Enviar</button>
+
+            </form>
+        </div>
+        <button id="logout-btn" onclick="logout()">
+            Cerrar sesión
+        </button>
+    </div>
+
+    <footer>
+        &copy; 2025 Strat & Tax. Todos los derechos reservados.
+    </footer>
+
+    <script>
+        // 🔑 Credenciales Fijas (para el ejemplo)
+        const userDB = {
+            username: "admin",
+            password: "1234"
+        };
+
+        const loginCard = document.getElementById("login-card");
+        const formSolicitud = document.getElementById("form-solicitud");
+        const logoutBtn = document.getElementById("logout-btn");
+        const errorMsg = document.getElementById("error-msg");
+        const usuarioInput = document.getElementById("usuario");
+        const passwordInput = document.getElementById("password");
+
+        /**
+         * Controla la visibilidad de los elementos basados en si el usuario está logueado.
+         * @param {boolean} isLoggedIn - Estado de la sesión.
+         */
+        function displayUI(isLoggedIn) {
+            if (isLoggedIn) {
+                // Si está logueado: Ocultar login y mostrar formulario/logout
+                loginCard.style.display = "none";
+                formSolicitud.style.display = "block";
+                logoutBtn.style.display = "block";
+            } else {
+                // Si no está logueado: Mostrar login y ocultar formulario/logout
+                formSolicitud.style.display = "none";
+                logoutBtn.style.display = "none";
+                loginCard.style.display = "block";
+                // Limpiar campos de login y mensaje de error
+                usuarioInput.value = "";
+                passwordInput.value = "";
+                errorMsg.style.display = "none";
+            }
+        }
+
+        /**
+         * Verifica el estado de la sesión almacenado en localStorage al cargar la página.
+         */
+        function checkLoginState() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            displayUI(isLoggedIn);
+        }
+
+        /**
+         * Maneja el proceso de inicio de sesión.
+         * Guarda el estado en localStorage si las credenciales son correctas.
+         */
+        function login() {
+            const user = usuarioInput.value;
+            const pass = passwordInput.value;
+
+            if (user === userDB.username && pass === userDB.password) {
+                // Credenciales correctas: Marcar como logueado en localStorage
+                localStorage.setItem('isLoggedIn', 'true');
+                displayUI(true);
+            } else {
+                // Credenciales incorrectas: Mostrar mensaje de error
+                errorMsg.style.display = "block";
+            }
+        }
+
+        /**
+         * Maneja el proceso de cierre de sesión.
+         * Elimina el estado de localStorage.
+         */
+        function logout() {
+            // Eliminar el estado de logueo de localStorage
+            localStorage.removeItem('isLoggedIn');
+            displayUI(false);
+        }
+
+        // --- Lógica del formulario de solicitud ---
+
+        const PYTHON_ENDPOINT = "http://127.0.0.1:5001/generate-word";
+        const form = document.getElementById('solicitudForm');
+        const responseMessage = document.getElementById('response-message');
+        const submitButton = document.querySelector('.btn-submit');
+        const servicioSelect = document.getElementById('servicio');
+        const descHiddenInput = document.getElementById('descripcion_del_servicio');
+
+        // Función para actualizar el campo oculto de descripción al cambiar el servicio
+        servicioSelect.addEventListener('change', () => {
+            descHiddenInput.value = servicioSelect.value;
+        });
+
+        function showMessage(text, type) {
+            responseMessage.textContent = text;
+            responseMessage.className = `message ${type}`;
+            responseMessage.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            responseMessage.style.display = 'none';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Procesando...';
+
+            try {
+                const formData = new FormData(form);
+
+                const response = await fetch(PYTHON_ENDPOINT, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = "Documentos_Generados.zip";
+
+                    if (contentDisposition && contentDisposition.includes("filename=")) {
+                        const match = contentDisposition.match(/filename="(.+?)"/);
+                        if (match) filename = match[1];
+                    }
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+
+                    showMessage(`Documento generado: ${filename}`, 'success');
+
+                } else {
+                    const errorData = await response.json();
+                    showMessage(`Error: ${errorData.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage("No se pudo contactar al servidor Python.", "error");
+            }
+
+            submitButton.disabled = false;
+            submitButton.textContent = 'Generar Solicitud y Descargar Word';
+        });
+
+        // 🚀 Inicializar la verificación del estado de login al cargar la página
+        checkLoginState();
+    </script>
+
+</body>
+
+</html>
