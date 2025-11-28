@@ -12,8 +12,8 @@ CORS(app)
 
 # Carpetas raíz
 TEMPLATE_FOLDER = 'template_word'
-GENERATED_DOCS = 'generated_docs'
-GENERATED_ZIPS = 'generated_zips'
+GENERATED_DOCS = 'template_gendocs'
+GENERATED_ZIPS = 'template_genzips'
 
 os.makedirs(TEMPLATE_FOLDER, exist_ok=True)
 os.makedirs(GENERATED_DOCS, exist_ok=True)
