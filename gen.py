@@ -7,6 +7,15 @@ from flask_cors import CORS
 from docx import Document
 from docx.shared import Inches
 
+# Nuevas importaciones para Google Drive
+import pickle
+import json
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+
 app = Flask(__name__)
 CORS(app)
 
@@ -14,6 +23,11 @@ CORS(app)
 TEMPLATE_FOLDER = 'template_word'
 GENERATED_DOCS = 'template_gendocs'
 GENERATED_ZIPS = 'template_genzips'
+
+# Si modificas el alcance de acceso (SCOPE), borra el archivo token.pickle
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
+TOKEN_FILE = 'token.pickle'
+CREDENTIALS_FILE = 'credentials.json'
 
 os.makedirs(TEMPLATE_FOLDER, exist_ok=True)
 os.makedirs(GENERATED_DOCS, exist_ok=True)
@@ -93,6 +107,53 @@ def generate_single_document(template_filename, template_root, replacements, use
     document.save(buffer)
     buffer.seek(0)
     return buffer
+
+# Función ADICIONAL para manejar la autenticación y la carga a Drive
+def authenticate_and_upload_to_drive(file_name, zip_buffer):
+    creds = None
+    # El archivo token.pickle almacena los tokens de acceso y refresco del usuario
+    # y es creado automáticamente cuando el flujo de autorización se completa por primera vez.
+    if os.path.exists(TOKEN_FILE):
+        with open(TOKEN_FILE, 'rb') as token:
+            creds = pickle.load(token)
+            
+    # Si no hay credenciales válidas disponibles, inicia el flujo de inicio de sesión.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            # Asegúrate de tener tu archivo credentials.json de Google Cloud Console
+            if not os.path.exists(CREDENTIALS_FILE):
+                print(f"Error: No se encontró el archivo de credenciales '{CREDENTIALS_FILE}'.")
+                return {"success": False, "message": "Falta el archivo de credenciales de Google Drive."}
+            
+            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
+            creds = flow.run_local_server(port=0)
+            
+        # Guarda las credenciales para la próxima ejecución
+        with open(TOKEN_FILE, 'wb') as token:
+            pickle.dump(creds, token)
+
+    try:
+        service = build('drive', 'v3', credentials=creds)
+        
+        # Metadata del archivo
+        file_metadata = {'name': file_name}
+        
+        # El MediaIoBaseUpload toma el objeto io.BytesIO como medio
+        media = MediaIoBaseUpload(zip_buffer, mimetype='application/zip', resumable=True)
+        
+        # Llama a la API para cargar el archivo
+        file = service.files().create(body=file_metadata,
+                                      media_body=media,
+                                      fields='id').execute()
+        
+        return {"success": True, "message": f"Archivo cargado a Google Drive con éxito. ID: {file.get('id')}"}
+
+    except Exception as e:
+        # Aquí puedes manejar errores específicos de la API (p.ej. cuota)
+        return {"success": False, "message": f"Error al cargar a Google Drive: {str(e)}"}
+
 
 @app.route('/generate-word', methods=['POST'])
 def generate_word():
@@ -189,7 +250,16 @@ def generate_word():
         zip_server_path = os.path.join(GENERATED_ZIPS, final_zip_name)
         with open(zip_server_path, "wb") as zip_file_for_storage:
             zip_file_for_storage.write(zip_buffer.getvalue())
-
+        
+        # Lógica ADICIONAL: Llamar a la función para subir el archivo a Google Drive
+        # Nota: Volvemos a posicionar el buffer al inicio por si el guardado local lo movió.
+        zip_buffer.seek(0) 
+        upload_result = authenticate_and_upload_to_drive(final_zip_name, zip_buffer)
+        
+        print(f"Resultado de la carga a Google Drive: {upload_result['message']}")
+        
+        # Volvemos a posicionar el buffer al inicio antes de enviarlo
+        zip_buffer.seek(0) 
         return send_file(
             zip_buffer,
             mimetype='application/zip',
