@@ -420,7 +420,7 @@
         &copy; 2025 Strat & Tax. Todos los derechos reservados.
     </footer>
 
-    <script>
+<script>
         // 🔑 Credenciales Fijas (para el ejemplo)
         const userDB = {
             username: "admin",
@@ -544,7 +544,9 @@
                     a.click();
                     window.URL.revokeObjectURL(url);
 
-                    showMessage(`Documento generado: ${filename}`, 'success');
+                    // Mensaje de éxito de la descarga. El éxito de la carga a Drive
+                    // se muestra en la consola del servidor Python.
+                    showMessage(`Documento generado y DESCARGADO: ${filename}. (Revise la consola del servidor Python para el estado de Google Drive)`, 'success');
 
                 } else {
                     const errorData = await response.json();

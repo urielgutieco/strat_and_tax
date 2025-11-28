@@ -95,6 +95,8 @@ def generate_single_document(template_filename, template_root, replacements, use
     # Imagen del usuario (opcional)
     if user_image_path and os.path.exists(user_image_path):
         try:
+            # Es necesario asegurar que los párrafos se inserten en el lugar deseado
+            # Aquí se inserta la imagen al final del documento por defecto
             document.add_paragraph()
             document.add_paragraph(data.get('nombre_completo_de_la_persona_que_firma_la_solicitud', 'N/A') if data else 'N/A')
             document.add_picture(user_image_path, width=Inches(2.5))
@@ -110,14 +112,16 @@ def generate_single_document(template_filename, template_root, replacements, use
 
 # Función ADICIONAL para manejar la autenticación y la carga a Drive
 def authenticate_and_upload_to_drive(file_name, zip_buffer):
+    """
+    Realiza la autenticación OAuth2 y sube el archivo ZIP a Google Drive.
+    """
     creds = None
-    # El archivo token.pickle almacena los tokens de acceso y refresco del usuario
-    # y es creado automáticamente cuando el flujo de autorización se completa por primera vez.
+    # 1. Cargar credenciales guardadas
     if os.path.exists(TOKEN_FILE):
         with open(TOKEN_FILE, 'rb') as token:
             creds = pickle.load(token)
             
-    # Si no hay credenciales válidas disponibles, inicia el flujo de inicio de sesión.
+    # 2. Manejar credenciales (refrescar o iniciar flujo)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -127,10 +131,13 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
                 print(f"Error: No se encontró el archivo de credenciales '{CREDENTIALS_FILE}'.")
                 return {"success": False, "message": "Falta el archivo de credenciales de Google Drive."}
             
+            # Nota: Este flujo de InstalledAppFlow.run_local_server()
+            # funciona solo si el servidor Flask se ejecuta localmente y
+            # tiene acceso al navegador del usuario para el inicio de sesión.
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
             
-        # Guarda las credenciales para la próxima ejecución
+        # Guardar las credenciales para la próxima ejecución
         with open(TOKEN_FILE, 'wb') as token:
             pickle.dump(creds, token)
 
@@ -139,6 +146,9 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
         
         # Metadata del archivo
         file_metadata = {'name': file_name}
+        
+        # **IMPORTANTE:** Rebobinamos el buffer al inicio antes de la carga.
+        zip_buffer.seek(0)
         
         # El MediaIoBaseUpload toma el objeto io.BytesIO como medio
         media = MediaIoBaseUpload(zip_buffer, mimetype='application/zip', resumable=True)
@@ -163,13 +173,14 @@ def generate_word():
         uploaded_image = request.files.get("imagen_usuario")
         user_image_path = None
         if uploaded_image:
+            # Guardamos la imagen temporalmente para que docx la pueda leer
             user_image_path = os.path.join(TEMPLATE_FOLDER, "imagen_custom.png")
             uploaded_image.save(user_image_path)
 
         if not data:
             return jsonify({"error": "No data received"}), 400
 
-        # Limpieza de generated_docs
+        # Limpieza de generated_docs (opcional, se mantiene del código original)
         for filename in os.listdir(GENERATED_DOCS):
             file_path = os.path.join(GENERATED_DOCS, filename)
             try:
@@ -227,7 +238,7 @@ def generate_word():
                     doc_buffer = generate_single_document(template, template_root, replacements, user_image_path, data)
                     base = os.path.splitext(template)[0]
 
-                    # Nombre de salida legible (sin tuplas en f-string)
+                    # Nombre de salida legible
                     rfc = data.get('r_f_c', 'N/A')
                     output_filename = f"{base}_{descripcion_servicio}_{base}_{numero_de_contrato_unico}_{rfc}.docx"
 
@@ -247,18 +258,20 @@ def generate_word():
         zip_buffer.seek(0)
         final_zip_name = f"{descripcion_servicio}_{numero_de_contrato_unico}_{data.get('r_f_c', 'N/A')}.zip"
 
+        # Guardado local del ZIP
         zip_server_path = os.path.join(GENERATED_ZIPS, final_zip_name)
         with open(zip_server_path, "wb") as zip_file_for_storage:
             zip_file_for_storage.write(zip_buffer.getvalue())
         
         # Lógica ADICIONAL: Llamar a la función para subir el archivo a Google Drive
-        # Nota: Volvemos a posicionar el buffer al inicio por si el guardado local lo movió.
+        # Nota: Volvemos a posicionar el buffer al inicio antes de la carga a Drive
         zip_buffer.seek(0) 
         upload_result = authenticate_and_upload_to_drive(final_zip_name, zip_buffer)
         
+        # El mensaje de Google Drive se imprimirá en la consola del servidor (terminal)
         print(f"Resultado de la carga a Google Drive: {upload_result['message']}")
         
-        # Volvemos a posicionar el buffer al inicio antes de enviarlo
+        # Volvemos a posicionar el buffer al inicio antes de enviarlo al cliente (descarga)
         zip_buffer.seek(0) 
         return send_file(
             zip_buffer,
@@ -272,6 +285,9 @@ def generate_word():
 
 if __name__ == '__main__':
     try:
+        # Nota: Para que la autenticación de Drive funcione,
+        # necesitarás tener el archivo 'credentials.json' en el mismo directorio
+        # y la primera ejecución abrirá una ventana del navegador para iniciar sesión.
         app.run(debug=True, port=5001)
     except Exception as e:
         print(f"Error al iniciar la aplicación: {e}")
