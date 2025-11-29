@@ -8,6 +8,7 @@ import logging
 import tempfile
 import pathlib
 import re
+import bcrypt
 from flask import Flask, request, send_file, jsonify, abort
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -42,6 +43,71 @@ else:
 # Logging en modo producción
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("generate-word-app")
+
+# Aquí pones la contraseña que LE VAS A DAR a la usuaria (Ej: "ContraseñaProd123")
+password_plano = b"u12345G" 
+# Nota: La 'b' convierte la cadena a bytes, lo que requiere bcrypt.
+
+# Generar el hash seguro
+hashed_password = bcrypt.hashpw(password_plano, bcrypt.gensalt())
+
+# Imprimir el hash para copiarlo
+print(hashed_password.decode('utf-8'))
+# Ubicación: Dentro de api/index.py
+
+# Base de datos de usuarios con HASHES de contraseñas
+USER_DB = {
+    "nombre_administrador_seguro": b"$2b$12$tUa5Z8rF.E.q2H/i.q5U7.G.R6A1W9V4P3I0Y2X5Q8T7S6R5C4V", 
+    
+    # 🎯 Aquí pegas el hash generado en el paso 2
+    "nombre_de_la_usuaria_prod": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4", 
+}
+
+# Ubicación: En api/index.py, después de la sección de Configuración de Seguridad.
+
+@app.route('/login', methods=['POST'])
+def login():
+    """
+    Verifica las credenciales utilizando bcrypt para comparar la contraseña ingresada
+    con el hash almacenado en USER_DB. Si son válidas, emite un token JWT.
+    """
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return jsonify({"error": "Falta usuario o contraseña"}), 400
+
+        # Obtener el hash almacenado del usuario (ya debe estar en formato bytes: b'...')
+        stored_hash = USER_DB.get(username) 
+
+        # 1. Verificar credenciales con bcrypt.checkpw
+        # bcrypt.checkpw requiere que tanto la contraseña ingresada como el hash 
+        # almacenado sean bytes (password.encode('utf-8') y stored_hash, respectivamente).
+        if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash):
+            
+            # 2. Generar Token JWT (Autenticación exitosa)
+            expiration_time = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+            payload = {
+                'sub': username, 
+                'exp': expiration_time,
+                'iat': datetime.now(timezone.utc)
+            }
+            token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+            return jsonify({
+                "message": "Login exitoso",
+                "token": token
+            }), 200
+        else:
+            # Fallo si el usuario no existe O el hash no coincide
+            return jsonify({"error": "Usuario o contraseña inválidos"}), 401
+
+    except Exception as e:
+        logger.error("Error inesperado en login: %s", e)
+        return jsonify({"error": "Error interno del servidor durante el login"}), 500
+
 
 # Carpetas raíz (no usadas en serverless pero se mantienen por compatibilidad)
 BASE_DIR = pathlib.Path(os.getenv("BASE_DIR", "."))
@@ -216,6 +282,7 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
     except Exception as e:
         logger.exception("Error al subir a Drive: %s", e)
         return {"success": False, "message": f"Error al subir a Drive: {str(e)}"}
+    
 
 # ------------------------
 # Endpoint principal (misma ruta y flujo)
@@ -288,7 +355,7 @@ def generate_word():
             '${cantidad}': data.get('cantidad', 'N/A'),
             '${unidad}': data.get('unidad', 'N/A'),
             '${numero_de_contrato}': numero_de_contrato_unico,
-            '${fecha_de_operación}': data.get('fecha_de-operación', 'N/A') if data.get('fecha_de-operación') else data.get('fecha_de_operación', 'N/A'),
+            '${fecha_de_operación}': data.get('fecha_de_operacion', 'N/A'),
             '${nombre_completo_de_la_persona_que_firma_la_solicitud}': data.get('nombre_completo_de_la_persona_que_firma_la_solicitud', 'N/A'),
             '${cargo_de_la_persona_que_firma_la_solicitud}': data.get('cargo_de_la_persona_que_firma_la_solicitud', 'N/A'),
             '${factura_relacionada_con_la_operación}': data.get('factura_relacionada_con_la_operación', 'N/A'),

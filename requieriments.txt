@@ -7,3 +7,6 @@ google-auth-httplib2
 google-auth-oauthlib
 waitress
 werkzeug
+bcrypt
+PyJWT
+cryptography
