@@ -8,37 +8,31 @@ import logging
 import tempfile
 import pathlib
 import re
-import bcrypt # Necesario para el hashing de contraseñas
-import jwt    # Necesario para la generación/verificación de tokens
+import bcrypt
+import jwt
 import time
 from flask import Flask, request, send_file, jsonify, abort
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from docx import Document
 from docx.shared import Inches
-
-# Google Drive (Mantenido)
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
-
-# Implementacion de Seguridad
-from datetime import datetime, timedelta, timezone 
-from functools import wraps 
+from datetime import datetime, timedelta, timezone
+from functools import wraps
 from collections import defaultdict
 
 # -------------------------
-# Config / Producción-safe
+# Configuración Flask / Producción
 # -------------------------
 app = Flask(__name__)
 
-# Seguridad y límites (Mantenido)
 MAX_CONTENT_LENGTH_BYTES = int(os.getenv("MAX_CONTENT_LENGTH_BYTES", 20 * 1024 * 1024))
 ALLOWED_IMAGE_EXT = {".png", ".jpg", ".jpeg"}
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH_BYTES
 app.config["JSON_SORT_KEYS"] = False
 
-# CORS (Mantenido)
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins:
     origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
@@ -46,27 +40,30 @@ if allowed_origins:
 else:
     CORS(app, resources={r"/generate-word": {"origins": []}})
 
-# Logging (Mantenido)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("generate-word-app")
 
 # -------------------------
-# Configuración JWT
+# JWT Config
 # -------------------------
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if not JWT_SECRET_KEY:
     raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en Vercel.")
-
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 1  # Token expira en 1 hora
 
 # -------------------------
-# Base de datos de usuarios (simulación)
+# Usuarios controlados (solo usuarios normales)
 # -------------------------
-# Solo hashes bcrypt; en producción usar DB real
 USER_DB = {
-    "admin": bcrypt.hashpw(b"adminpassword", bcrypt.gensalt()),  
-    "usuario1": bcrypt.hashpw(b"contraseña123", bcrypt.gensalt()),
+    "usuario1": {
+        "password_hash": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4",
+        "role": "user"
+    },
+    "usuario2": {
+        "password_hash": b"$2b$12$Xyz123Abc456Def789Ghi012Jkl345Mno678Pqr901Stu234Vwx",
+        "role": "user"
+    }
 }
 
 # -------------------------
@@ -74,7 +71,6 @@ USER_DB = {
 # -------------------------
 MAX_ATTEMPTS = 5
 BLOCK_TIME_SECONDS = 300  # 5 minutos
-
 login_attempts = defaultdict(lambda: {"count": 0, "last_attempt": 0, "blocked_until": 0})
 
 def check_rate_limit(ip):
@@ -95,7 +91,9 @@ def record_failed_attempt(ip):
 def reset_attempts(ip):
     login_attempts[ip] = {"count": 0, "last_attempt": 0, "blocked_until": 0}
 
-# Carpetas y Mapeos (Mantenido)
+# -------------------------
+# Carpetas y Mapeos
+# -------------------------
 BASE_DIR = pathlib.Path(os.getenv("BASE_DIR", "."))
 TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word")
 TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
@@ -107,7 +105,6 @@ GENERATED_DOCS.mkdir(parents=True, exist_ok=True)
 GENERATED_ZIPS.mkdir(parents=True, exist_ok=True)
 
 SERVICIO_TO_DIR = {
-    # ... Tu mapeo completo de servicios ...
     "Servicios de construccion de unidades unifamiliares": "construccion_unifamiliar",
     "Servicios de reparacion o ampliacion o remodelacion de viviendas unifamiliares": "reparacion_remodelacion_unifamiliar",
     "Servicio de remodelacion general de viviendas unifamiliares": "remodelacion_general",
@@ -143,23 +140,18 @@ TEMPLATE_FILES = [
 ]
 
 # -------------------------
-# Utilidades (Mantenido)
+# Utilidades
 # -------------------------
 def sanitize_filename(name: str) -> str:
-    # ...
-    # Tu función sanitize_filename
     name = secure_filename(name)
     name = re.sub(r'[_]{2,}', '_', name)
     return name[:200]
 
 def replace_text_in_document(document, replacements):
-    # ...
-    # Tu función replace_text_in_document
     for paragraph in document.paragraphs:
         for key, value in replacements.items():
             if key in paragraph.text:
                 paragraph.text = paragraph.text.replace(key, str(value))
-
     for table in document.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -169,40 +161,30 @@ def replace_text_in_document(document, replacements):
                             paragraph.text = paragraph.text.replace(key, str(value))
 
 def generate_single_document(template_filename, template_root, replacements, user_image_path=None, data=None):
-    # ...
-    # Tu función generate_single_document
     template_path = os.path.join(template_root, template_filename)
     if not os.path.exists(template_path):
         raise FileNotFoundError(f"Plantilla '{template_filename}' no encontrada en '{template_root}'.")
-
     document = Document(template_path)
     replace_text_in_document(document, replacements)
-
     if user_image_path and os.path.exists(user_image_path):
         try:
             document.add_paragraph()
-            document.add_paragraph(
-                data.get('nombre_completo_de_la_persona_que_firma_la_solicitud', 'N/A')
-                if data else 'N/A'
-            )
+            document.add_paragraph(data.get('nombre_completo_de_la_persona_que_firma_la_solicitud', 'N/A') if data else 'N/A')
             document.add_picture(user_image_path, width=Inches(2.5))
         except Exception as ex:
             logger.warning("No se pudo insertar la imagen del usuario: %s", ex)
             document.add_paragraph("⚠ No se pudo insertar la imagen del usuario.")
     else:
         document.add_paragraph("⚠ Imagen de firma no encontrada en el servidor.")
-
     buffer = io.BytesIO()
     document.save(buffer)
     buffer.seek(0)
     return buffer
 
-# ------------------------
-# Google Drive (Service Account) - seguro (Mantenido)
-# ------------------------
+# -------------------------
+# Google Drive Service Account
+# -------------------------
 def _load_service_account_info():
-    # ...
-    # Tu función _load_service_account_info
     raw_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
     if raw_json:
         try:
@@ -210,7 +192,6 @@ def _load_service_account_info():
         except Exception as e:
             logger.error("GOOGLE_SERVICE_ACCOUNT_JSON no es JSON válido: %s", e)
             raise
-
     b64 = os.getenv("GOOGLE_SERVICE_ACCOUNT_BASE64")
     if b64:
         try:
@@ -219,92 +200,53 @@ def _load_service_account_info():
         except Exception as e:
             logger.error("GOOGLE_SERVICE_ACCOUNT_BASE64 inválido: %s", e)
             raise
-
     raise EnvironmentError("Falta GOOGLE_SERVICE_ACCOUNT_JSON o GOOGLE_SERVICE_ACCOUNT_BASE64")
 
 def authenticate_and_upload_to_drive(file_name, zip_buffer):
-    # ...
-    # Tu función authenticate_and_upload_to_drive
     if os.getenv("DISABLE_DRIVE_UPLOAD", "0") == "1":
         logger.info("Subida a Drive deshabilitada por variable DISABLE_DRIVE_UPLOAD.")
         return {"success": True, "message": "Subida a Drive deshabilitada (env var)"}
-
     try:
         service_account_info = _load_service_account_info()
-
-        creds = Credentials.from_service_account_info(
-            service_account_info,
-            scopes=["https://www.googleapis.com/auth/drive.file"]
-        )
-
+        creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/drive.file"])
         service = build('drive', 'v3', credentials=creds, cache_discovery=False)
-
-        file_metadata = {
-            'name': sanitize_filename(file_name)
-        }
-
+        file_metadata = {'name': sanitize_filename(file_name)}
         zip_buffer.seek(0)
         media = MediaIoBaseUpload(zip_buffer, mimetype='application/zip', resumable=True)
-
-        uploaded_file = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
-
-        return {
-            "success": True,
-            "message": f"Archivo subido correctamente. ID: {uploaded_file.get('id')}"
-        }
-
+        uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        return {"success": True, "message": f"Archivo subido correctamente. ID: {uploaded_file.get('id')}"}
     except Exception as e:
         logger.exception("Error al subir a Drive: %s", e)
         return {"success": False, "message": f"Error al subir a Drive: {str(e)}"}
-    
-# -------------------------
-# Configuración de Seguridad JWT y Usuarios 🔑 (Producción)
-# -------------------------
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-if not JWT_SECRET_KEY:
-    raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en Vercel.")
-
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 1  # Token expira en 1 hora para mayor seguridad
-
-# Base de datos de usuarios (solo hashes - para producción usar DB)
-USER_DB = {
-    "nombre_administrador_seguro": b"$2b$12$tUa5Z8rF.E.q2H/i.q5U7.G.R6A1W9V4P3I0Y2X5Q8T7S6R5C4V",
-    "nombre_de_la_usuaria_prod": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4",
-}
 
 # -------------------------
-# Decorador JWT
+# Decorador JWT usuarios normales
 # -------------------------
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
-            token = auth_header.split(' ')[1]
-
-        if not token:
-            return jsonify({'error': 'Token de acceso faltante. Inicia sesión.'}), 403
-
-        try:
-            data = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-            current_user = data['sub']
-
-            if current_user not in USER_DB:
-                return jsonify({'error': 'Usuario no autorizado'}), 403
-
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token expirado. Vuelve a iniciar sesión.'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Token inválido o manipulado.'}), 403
-
-        return f(current_user, *args, **kwargs)
-    return decorated
+def token_required(required_role='user'):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = None
+            auth_header = request.headers.get('Authorization')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+            if not token:
+                return jsonify({'error': 'Token de acceso faltante. Inicia sesión.'}), 403
+            try:
+                data = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], audience='strat_and_tax_api', issuer='strat_and_tax_server')
+                current_user = data['sub']
+                role = data.get('role')
+                if current_user not in USER_DB:
+                    return jsonify({'error': 'Usuario no autorizado'}), 403
+                if role != required_role:
+                    return jsonify({'error': 'No tienes permisos para este recurso'}), 403
+            except jwt.ExpiredSignatureError:
+                return jsonify({'error': 'Token expirado. Vuelve a iniciar sesión.'}), 401
+            except jwt.InvalidTokenError:
+                return jsonify({'error': 'Token inválido o manipulado.'}), 403
+            return f(current_user, *args, **kwargs)
+        return decorated
+    return decorator
 
 # -------------------------
 # Endpoint Login
@@ -315,83 +257,67 @@ def login():
     allowed, wait_time = check_rate_limit(ip)
     if not allowed:
         return jsonify({"error": f"Demasiados intentos. Espera {wait_time} segundos"}), 429
-
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-
     if not username or not password:
         return jsonify({"error": "Falta usuario o contraseña"}), 400
-
-    stored_hash = USER_DB.get(username)
-
-    if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash):
+    user_record = USER_DB.get(username)
+    if user_record and bcrypt.checkpw(password.encode('utf-8'), user_record['password_hash']):
         reset_attempts(ip)
         issued_at = datetime.now(timezone.utc)
         expiration_time = issued_at + timedelta(hours=JWT_EXPIRATION_HOURS)
-
         payload = {
             'sub': username,
+            'role': user_record['role'],
             'iat': int(issued_at.timestamp()),
             'nbf': int(issued_at.timestamp()),
-            'exp': int(expiration_time.timestamp())
+            'exp': int(expiration_time.timestamp()),
+            'aud': 'strat_and_tax_api',
+            'iss': 'strat_and_tax_server'
         }
-
         token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-
-        return jsonify({
-            "message": "Login exitoso",
-            "token": token
-        }), 200
+        return jsonify({"message": "Login exitoso", "token": token}), 200
     else:
         record_failed_attempt(ip)
         return jsonify({"error": "Usuario o contraseña inválidos"}), 401
 
-# ------------------------
-# Endpoint principal (Protegido)
-# ------------------------
+# -------------------------
+# Endpoint principal protegido
+# -------------------------
 @app.route('/generate-word', methods=['POST'])
-@token_required # <-- APLICACIÓN DEL DECORADOR (CORRECTO)
-def generate_word(current_user): # <-- ACEPTA EL current_user (CORRECTO)
-    # ... Tu lógica de generación de documentos ...
-    logger.info("Generación de documentos iniciada por usuario: %s", current_user)
+@token_required(required_role='user')
+def generate_word(current_user):
+    logger.info(f"Generación de documentos iniciada por usuario: {current_user}")
     try:
-        # form y archivos
         data = request.form.to_dict()
         uploaded_image = request.files.get("imagen_usuario")
         user_image_path = None
 
-        # Validar datos mínimos
         if not data:
             return jsonify({"error": "No data received"}), 400
 
         servicio = data.get('servicio')
         if not servicio:
             return jsonify({"error": "Debes seleccionar un servicio."}), 400
-
         carpeta_servicio = SERVICIO_TO_DIR.get(servicio)
         if not carpeta_servicio:
             return jsonify({"error": f"No existe carpeta mapeada para el servicio: {servicio}"}), 404
-
         template_root = os.path.join(TEMPLATE_FOLDER, carpeta_servicio)
         if not os.path.isdir(template_root):
             return jsonify({"error": f"La carpeta de plantillas no existe: {template_root}"}), 404
 
-        # manejar imagen subida (temporal)
         if uploaded_image and uploaded_image.filename:
             filename = sanitize_filename(uploaded_image.filename)
             ext = pathlib.Path(filename).suffix.lower()
             if ext not in ALLOWED_IMAGE_EXT:
                 return jsonify({"error": "Tipo de archivo no permitido para imagen."}), 400
-
-            # Guardar temporalmente
             tmp_dir = tempfile.TemporaryDirectory()
             tmp_path = pathlib.Path(tmp_dir.name) / filename
             uploaded_image.save(str(tmp_path))
             user_image_path = str(tmp_path)
-            # nota: tmp_dir se eliminará cuando el objeto tmp_dir sea recolectado; mantenemos referencia en scope.
 
-        # limpiar docs previos en carpeta (si existe) — seguí tu lógica
+        # limpiar docs previos
         try:
             for filename in os.listdir(GENERATED_DOCS):
                 file_path = os.path.join(GENERATED_DOCS, filename)
@@ -401,7 +327,6 @@ def generate_word(current_user): # <-- ACEPTA EL current_user (CORRECTO)
                     except Exception as e:
                         logger.warning("Error al eliminar %s: %s", file_path, e)
         except FileNotFoundError:
-            # ok en serverless
             pass
 
         numero_de_contrato_unico = ''.join([str(random.randint(0, 9)) for _ in range(18)])
@@ -429,20 +354,14 @@ def generate_word(current_user): # <-- ACEPTA EL current_user (CORRECTO)
             '${comentarios}': data.get('comentarios', 'N/A')
         }
 
-        # Crear ZIP en memoria (BytesIO)
         zip_buffer = io.BytesIO()
-
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for template in TEMPLATE_FILES:
                 try:
                     doc_buffer = generate_single_document(template, template_root, replacements, user_image_path, data)
                     base = os.path.splitext(template)[0]
-
                     rfc = data.get('r_f_c', 'N/A')
-                    # filename seguro
                     output_filename = f"{sanitize_filename(base)}_{sanitize_filename(descripcion_servicio)}_{sanitize_filename(base)}_{numero_de_contrato_unico}_{sanitize_filename(rfc)}.docx"
-
-                    # opcional: guardar en GENERATED_DOCS (si hay persistencia)
                     try:
                         output_path = GENERATED_DOCS / output_filename
                         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -450,52 +369,38 @@ def generate_word(current_user): # <-- ACEPTA EL current_user (CORRECTO)
                             f.write(doc_buffer.getvalue())
                     except Exception as e:
                         logger.debug("No se pudo guardar en disco (ok en serverless): %s", e)
-
                     zip_file.writestr(output_filename, doc_buffer.getvalue())
-
                 except Exception as e:
                     logger.exception("Error generando documento %s: %s", template, e)
                     continue
 
         zip_buffer.seek(0)
-
         final_zip_name = f"{sanitize_filename(descripcion_servicio)}_{numero_de_contrato_unico}_{sanitize_filename(data.get('r_f_c', 'N/A'))}.zip"
 
-        # Guardar zip temporalmente en servidor (opcional; en serverless es por poco tiempo)
         try:
             tmp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
             tmp_zip.write(zip_buffer.getvalue())
             tmp_zip.flush()
             tmp_zip_name = tmp_zip.name
             tmp_zip.close()
-            # mover a carpeta GENERARED_ZIPS si quieres persistencia local
             try:
                 pathlib.Path(GENERATED_ZIPS).mkdir(parents=True, exist_ok=True)
                 dest = pathlib.Path(GENERATED_ZIPS) / final_zip_name
                 with open(tmp_zip_name, "rb") as s, open(dest, "wb") as d:
                     d.write(s.read())
             except Exception:
-                # no crítico
                 pass
         except Exception as e:
             logger.warning("No se pudo crear zip temporal en disco: %s", e)
             tmp_zip_name = None
 
-        # ---------- SUBIR A DRIVE ----------
         zip_buffer.seek(0)
         upload_result = authenticate_and_upload_to_drive(final_zip_name, zip_buffer)
         logger.info("GOOGLE DRIVE: %s", upload_result.get("message"))
 
-        # Preparar respuesta (descarga directa)
         zip_buffer.seek(0)
-        response = send_file(
-            zip_buffer,
-            mimetype='application/zip',
-            as_attachment=True,
-            download_name=final_zip_name
-        )
+        response = send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name=final_zip_name)
 
-        # limpieza de temporales (si existen)
         try:
             if tmp_zip_name and os.path.exists(tmp_zip_name):
                 os.remove(tmp_zip_name)
@@ -507,3 +412,6 @@ def generate_word(current_user): # <-- ACEPTA EL current_user (CORRECTO)
     except Exception as e:
         logger.exception("Error interno en endpoint: %s", e)
         return jsonify({"error": f"Error interno: {str(e)}"}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
