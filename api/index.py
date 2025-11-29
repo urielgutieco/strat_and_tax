@@ -46,7 +46,10 @@ logger = logging.getLogger("generate-word-app")
 # Carpetas raíz (no usadas en serverless pero se mantienen por compatibilidad)
 BASE_DIR = pathlib.Path(os.getenv("BASE_DIR", "."))
 
-TEMPLATE_FOLDER = BASE_DIR / 'template_word'
+TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word") # Asumiendo que "template_word" es el default
+# BASE_DIR en Vercel es donde se encuentra el código.
+TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
+# Si usas el valor por defecto, las plantillas deben estar en api/template_word/
 GENERATED_DOCS = BASE_DIR / 'template_gendocs'
 GENERATED_ZIPS = BASE_DIR / 'template_genzips'
 

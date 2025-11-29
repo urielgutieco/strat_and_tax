@@ -484,7 +484,9 @@
     </footer>
 
     <script>
-        const PYTHON_ENDPOINT = "http://127.0.0.1:5001/generate-word";
+        const PYTHON_ENDPOINT = "/api/index";// O la ruta que configuraste en Vercel
+            // O directamente a la URL final de tu dominio en Vercel, si estás en otro origen.
+            // Si el frontend está en el mismo dominio, la ruta relativa es preferible.
         const form = document.getElementById('solicitudForm');
         const responseMessage = document.getElementById('response-message');
         const submitButton = document.querySelector('.btn-submit');
