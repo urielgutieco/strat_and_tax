@@ -8,79 +8,106 @@ import logging
 import tempfile
 import pathlib
 import re
-import bcrypt
-import jwt
+import bcrypt # Necesario para el hashing de contraseñas
+import jwt    # Necesario para la generación/verificación de tokens
+import time
 from flask import Flask, request, send_file, jsonify, abort
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from docx import Document
 from docx.shared import Inches
 
-# Google Drive
+# Google Drive (Mantenido)
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
-#Implementacion de Seguridad
+# Implementacion de Seguridad
 from datetime import datetime, timedelta, timezone 
-from functools import wraps # Necesaria para el decorador
-from flask import Flask, request, send_file, jsonify, abort
+from functools import wraps 
+from collections import defaultdict
 
 # -------------------------
 # Config / Producción-safe
 # -------------------------
 app = Flask(__name__)
 
-# Seguridad y límites
-MAX_CONTENT_LENGTH_BYTES = int(os.getenv("MAX_CONTENT_LENGTH_BYTES", 20 * 1024 * 1024))  # 20 MB por default
+# Seguridad y límites (Mantenido)
+MAX_CONTENT_LENGTH_BYTES = int(os.getenv("MAX_CONTENT_LENGTH_BYTES", 20 * 1024 * 1024))
 ALLOWED_IMAGE_EXT = {".png", ".jpg", ".jpeg"}
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH_BYTES
 app.config["JSON_SORT_KEYS"] = False
 
-# CORS: permitir orígenes configurados (coma-separados) o ninguno (más seguro)
+# CORS (Mantenido)
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins:
     origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
     CORS(app, origins=origins)
 else:
-    # En producción conviene especificar ALLOWED_ORIGINS; si no existe, no habilitamos CORS globalmente
     CORS(app, resources={r"/generate-word": {"origins": []}})
 
-# Logging en modo producción
+# Logging (Mantenido)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("generate-word-app")
 
 # -------------------------
-# Configuración de Seguridad JWT y Usuarios 🔑 (Agregado)
+# Configuración JWT
 # -------------------------
-# Clave secreta: OBLIGATORIO usar una variable de entorno en Vercel
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "TU_CLAVE_SECRETA_POR_DEFECTO_Y_SECRETA") 
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 24 # Token expira en 24 horas
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en Vercel.")
 
-# Base de datos de usuarios con HASHES de contraseñas (solo los hashes)
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 1  # Token expira en 1 hora
+
+# -------------------------
+# Base de datos de usuarios (simulación)
+# -------------------------
+# Solo hashes bcrypt; en producción usar DB real
 USER_DB = {
-    "nombre_administrador_seguro": b"$2b$12$tUa5Z8rF.E.q2H/i.q5U7.G.R6A1W9V4P3I0Y2X5Q8T7S6R5C4V", 
-    "nombre_de_la_usuaria_prod": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4", 
+    "admin": bcrypt.hashpw(b"adminpassword", bcrypt.gensalt()),  
+    "usuario1": bcrypt.hashpw(b"contraseña123", bcrypt.gensalt()),
 }
 
-# Carpetas raíz (no usadas en serverless pero se mantienen por compatibilidad)
-BASE_DIR = pathlib.Path(os.getenv("BASE_DIR", "."))
+# -------------------------
+# Rate limiting básico por IP (login)
+# -------------------------
+MAX_ATTEMPTS = 5
+BLOCK_TIME_SECONDS = 300  # 5 minutos
 
-TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word") # Asumiendo que "template_word" es el default
-# BASE_DIR en Vercel es donde se encuentra el código.
+login_attempts = defaultdict(lambda: {"count": 0, "last_attempt": 0, "blocked_until": 0})
+
+def check_rate_limit(ip):
+    entry = login_attempts[ip]
+    now = time.time()
+    if entry["blocked_until"] > now:
+        return False, int(entry["blocked_until"] - now)
+    return True, 0
+
+def record_failed_attempt(ip):
+    entry = login_attempts[ip]
+    now = time.time()
+    entry["count"] += 1
+    entry["last_attempt"] = now
+    if entry["count"] >= MAX_ATTEMPTS:
+        entry["blocked_until"] = now + BLOCK_TIME_SECONDS
+
+def reset_attempts(ip):
+    login_attempts[ip] = {"count": 0, "last_attempt": 0, "blocked_until": 0}
+
+# Carpetas y Mapeos (Mantenido)
+BASE_DIR = pathlib.Path(os.getenv("BASE_DIR", "."))
+TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word")
 TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
-# Si usas el valor por defecto, las plantillas deben estar en api/template_word/
 GENERATED_DOCS = BASE_DIR / 'template_gendocs'
 GENERATED_ZIPS = BASE_DIR / 'template_genzips'
 
-# Crear en caso de ejecución local; Vercel serverless no mantiene persistencia entre invocaciones.
 TEMPLATE_FOLDER.mkdir(parents=True, exist_ok=True)
 GENERATED_DOCS.mkdir(parents=True, exist_ok=True)
 GENERATED_ZIPS.mkdir(parents=True, exist_ok=True)
 
-# Mapeo servicio → carpeta (mismo que tenías)
 SERVICIO_TO_DIR = {
+    # ... Tu mapeo completo de servicios ...
     "Servicios de construccion de unidades unifamiliares": "construccion_unifamiliar",
     "Servicios de reparacion o ampliacion o remodelacion de viviendas unifamiliares": "reparacion_remodelacion_unifamiliar",
     "Servicio de remodelacion general de viviendas unifamiliares": "remodelacion_general",
@@ -107,7 +134,6 @@ SERVICIO_TO_DIR = {
     "Servicio de mantenimiento y reparacion de equipo pesado": "mantenimiento_reparacion_equipo_pesado",
 }
 
-# Plantillas (conservadas)
 TEMPLATE_FILES = [
     'plantilla_solicitud.docx',
     '2.docx',
@@ -117,16 +143,18 @@ TEMPLATE_FILES = [
 ]
 
 # -------------------------
-# Utilidades
+# Utilidades (Mantenido)
 # -------------------------
 def sanitize_filename(name: str) -> str:
-    """Devuelve nombre de archivo seguro (sin caracteres raros)."""
+    # ...
+    # Tu función sanitize_filename
     name = secure_filename(name)
-    # quitar secuencias dobles de subrayado y limitar longitud
     name = re.sub(r'[_]{2,}', '_', name)
     return name[:200]
 
 def replace_text_in_document(document, replacements):
+    # ...
+    # Tu función replace_text_in_document
     for paragraph in document.paragraphs:
         for key, value in replacements.items():
             if key in paragraph.text:
@@ -141,6 +169,8 @@ def replace_text_in_document(document, replacements):
                             paragraph.text = paragraph.text.replace(key, str(value))
 
 def generate_single_document(template_filename, template_root, replacements, user_image_path=None, data=None):
+    # ...
+    # Tu función generate_single_document
     template_path = os.path.join(template_root, template_filename)
     if not os.path.exists(template_path):
         raise FileNotFoundError(f"Plantilla '{template_filename}' no encontrada en '{template_root}'.")
@@ -148,7 +178,6 @@ def generate_single_document(template_filename, template_root, replacements, use
     document = Document(template_path)
     replace_text_in_document(document, replacements)
 
-    # Imagen
     if user_image_path and os.path.exists(user_image_path):
         try:
             document.add_paragraph()
@@ -158,7 +187,6 @@ def generate_single_document(template_filename, template_root, replacements, use
             )
             document.add_picture(user_image_path, width=Inches(2.5))
         except Exception as ex:
-            # Guardamos la excepción en log pero seguimos
             logger.warning("No se pudo insertar la imagen del usuario: %s", ex)
             document.add_paragraph("⚠ No se pudo insertar la imagen del usuario.")
     else:
@@ -170,14 +198,11 @@ def generate_single_document(template_filename, template_root, replacements, use
     return buffer
 
 # ------------------------
-# Google Drive (Service Account) - seguro
+# Google Drive (Service Account) - seguro (Mantenido)
 # ------------------------
 def _load_service_account_info():
-    """
-    Carga la info del service account desde:
-    1) GOOGLE_SERVICE_ACCOUNT_JSON (contenido JSON) o
-    2) GOOGLE_SERVICE_ACCOUNT_BASE64 (base64 del JSON)
-    """
+    # ...
+    # Tu función _load_service_account_info
     raw_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
     if raw_json:
         try:
@@ -198,10 +223,8 @@ def _load_service_account_info():
     raise EnvironmentError("Falta GOOGLE_SERVICE_ACCOUNT_JSON o GOOGLE_SERVICE_ACCOUNT_BASE64")
 
 def authenticate_and_upload_to_drive(file_name, zip_buffer):
-    """
-    Autenticación con Google Drive usando Service Account.
-    Si la variable DISABLE_DRIVE_UPLOAD=1 está establecida, no sube (útil en pruebas).
-    """
+    # ...
+    # Tu función authenticate_and_upload_to_drive
     if os.getenv("DISABLE_DRIVE_UPLOAD", "0") == "1":
         logger.info("Subida a Drive deshabilitada por variable DISABLE_DRIVE_UPLOAD.")
         return {"success": True, "message": "Subida a Drive deshabilitada (env var)"}
@@ -238,13 +261,29 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
         logger.exception("Error al subir a Drive: %s", e)
         return {"success": False, "message": f"Error al subir a Drive: {str(e)}"}
     
-    # Ubicación: Antes de la función generate_word()
+# -------------------------
+# Configuración de Seguridad JWT y Usuarios 🔑 (Producción)
+# -------------------------
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en Vercel.")
 
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 1  # Token expira en 1 hora para mayor seguridad
+
+# Base de datos de usuarios (solo hashes - para producción usar DB)
+USER_DB = {
+    "nombre_administrador_seguro": b"$2b$12$tUa5Z8rF.E.q2H/i.q5U7.G.R6A1W9V4P3I0Y2X5Q8T7S6R5C4V",
+    "nombre_de_la_usuaria_prod": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4",
+}
+
+# -------------------------
+# Decorador JWT
+# -------------------------
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        # Obtener el token del encabezado Authorization (Bearer <token>)
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
@@ -253,25 +292,69 @@ def token_required(f):
             return jsonify({'error': 'Token de acceso faltante. Inicia sesión.'}), 403
 
         try:
-            # Decodificar y verificar el token
             data = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             current_user = data['sub']
+
+            if current_user not in USER_DB:
+                return jsonify({'error': 'Usuario no autorizado'}), 403
+
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Token expirado. Vuelve a iniciar sesión.'}), 401
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Token inválido o manipulado.'}), 403
 
-        # Pasa el usuario autenticado a la función generate_word
         return f(current_user, *args, **kwargs)
-    return decorated    
+    return decorated
+
+# -------------------------
+# Endpoint Login
+# -------------------------
+@app.route('/login', methods=['POST'])
+def login():
+    ip = request.remote_addr
+    allowed, wait_time = check_rate_limit(ip)
+    if not allowed:
+        return jsonify({"error": f"Demasiados intentos. Espera {wait_time} segundos"}), 429
+
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"error": "Falta usuario o contraseña"}), 400
+
+    stored_hash = USER_DB.get(username)
+
+    if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash):
+        reset_attempts(ip)
+        issued_at = datetime.now(timezone.utc)
+        expiration_time = issued_at + timedelta(hours=JWT_EXPIRATION_HOURS)
+
+        payload = {
+            'sub': username,
+            'iat': int(issued_at.timestamp()),
+            'nbf': int(issued_at.timestamp()),
+            'exp': int(expiration_time.timestamp())
+        }
+
+        token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+        return jsonify({
+            "message": "Login exitoso",
+            "token": token
+        }), 200
+    else:
+        record_failed_attempt(ip)
+        return jsonify({"error": "Usuario o contraseña inválidos"}), 401
 
 # ------------------------
-# Endpoint principal (misma ruta y flujo)
+# Endpoint principal (Protegido)
 # ------------------------
 @app.route('/generate-word', methods=['POST'])
-@token_required # <-- APLICACIÓN DEL DECORADOR
-def generate_word(current_user): # <-- DEBE ACEPTAR EL current_user
-    logger.info("Generación de documentos iniciada por usuario: %s", current_user) # Opcional: log del usuario
+@token_required # <-- APLICACIÓN DEL DECORADOR (CORRECTO)
+def generate_word(current_user): # <-- ACEPTA EL current_user (CORRECTO)
+    # ... Tu lógica de generación de documentos ...
+    logger.info("Generación de documentos iniciada por usuario: %s", current_user)
     try:
         # form y archivos
         data = request.form.to_dict()
@@ -424,5 +507,3 @@ def generate_word(current_user): # <-- DEBE ACEPTAR EL current_user
     except Exception as e:
         logger.exception("Error interno en endpoint: %s", e)
         return jsonify({"error": f"Error interno: {str(e)}"}), 500
-
-
