@@ -22,17 +22,29 @@ from googleapiclient.http import MediaIoBaseUpload
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from collections import defaultdict
+from werkzeug.exceptions import RequestEntityTooLarge # Importante para manejo de tamaño de archivo
 
 # -------------------------
-# Configuración Flask / Producción
+# Configuración Flask / Serverless
 # -------------------------
+# En Serverless (Lambda), el uso de `pathlib.Path(__file__).parent` es seguro para recursos
+# que se empaquetan con la función.
+
 app = Flask(__name__)
 
+# NOTA: MAX_CONTENT_LENGTH en Lambda/API Gateway es mejor controlarlo en la configuración de API Gateway/balanceador.
+# Aquí se deja para consistencia, pero puede ser inefectivo sin configuración externa.
 MAX_CONTENT_LENGTH_BYTES = int(os.getenv("MAX_CONTENT_LENGTH_BYTES", 20 * 1024 * 1024))
 ALLOWED_IMAGE_EXT = {".png", ".jpg", ".jpeg"}
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH_BYTES
 app.config["JSON_SORT_KEYS"] = False
 
+# Las plantillas deben estar en una carpeta dentro del paquete de despliegue.
+# Se asume que la estructura de carpetas de plantillas está empaquetada con la función.
+TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word")
+TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
+
+# Configuración CORS
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins:
     origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
@@ -46,15 +58,17 @@ logger = logging.getLogger("generate-word-app")
 # -------------------------
 # JWT Config
 # -------------------------
-JWT_SECRET_KEY = os.getenv("$2b$12$tUa5Z8rF.E.q2H/i.q5U7.G.R6A1W9V4P3I0Y2X5Q8T7S6R5C41")
+# Se recomienda usar AWS Secrets Manager para claves en producción
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", None) # Variable de entorno más limpia
 if not JWT_SECRET_KEY:
-    raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en Vercel.")
+    raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en AWS Lambda Environment Variables.")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 1  # Token expira en 1 hora
 
 # -------------------------
 # Usuarios controlados (solo usuarios normales)
 # -------------------------
+# Idealmente, esta DB de usuarios debe estar en DynamoDB, Cognito o RDS
 USER_DB = {
     "usuario1": {
         "password_hash": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4",
@@ -67,13 +81,17 @@ USER_DB = {
 }
 
 # -------------------------
-# Rate limiting básico por IP (login)
+# Rate limiting básico por IP (login) - ADVERTENCIA PARA LAMBDA
 # -------------------------
+# ESTE RATE LIMITING NO ES CONFIABLE EN UN ENTORNO SERVERLESS/LAMBDA
+# DEBIDO A LA NATURALEZA EFÍMERA DE LAS INSTANCIAS.
+# Se mantiene la estructura, pero se recomienda mover la lógica a una capa persistente (DynamoDB/Redis)
 MAX_ATTEMPTS = 5
 BLOCK_TIME_SECONDS = 300  # 5 minutos
 login_attempts = defaultdict(lambda: {"count": 0, "last_attempt": 0, "blocked_until": 0})
 
 def check_rate_limit(ip):
+    # En Lambda, esta IP será la de la fuente (ej. API Gateway) y el estado no persistirá entre ejecuciones.
     entry = login_attempts[ip]
     now = time.time()
     if entry["blocked_until"] > now:
@@ -92,18 +110,8 @@ def reset_attempts(ip):
     login_attempts[ip] = {"count": 0, "last_attempt": 0, "blocked_until": 0}
 
 # -------------------------
-# Carpetas y Mapeos
+# Mapeos de Servicios
 # -------------------------
-BASE_DIR = pathlib.Path(os.getenv("BASE_DIR", "."))
-TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word")
-TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
-GENERATED_DOCS = BASE_DIR / 'template_gendocs'
-GENERATED_ZIPS = BASE_DIR / 'template_genzips'
-
-TEMPLATE_FOLDER.mkdir(parents=True, exist_ok=True)
-GENERATED_DOCS.mkdir(parents=True, exist_ok=True)
-GENERATED_ZIPS.mkdir(parents=True, exist_ok=True)
-
 SERVICIO_TO_DIR = {
     "Servicios de construccion de unidades unifamiliares": "construccion_unifamiliar",
     "Servicios de reparacion o ampliacion o remodelacion de viviendas unifamiliares": "reparacion_remodelacion_unifamiliar",
@@ -161,14 +169,19 @@ def replace_text_in_document(document, replacements):
                             paragraph.text = paragraph.text.replace(key, str(value))
 
 def generate_single_document(template_filename, template_root, replacements, user_image_path=None, data=None):
-    template_path = os.path.join(template_root, template_filename)
-    if not os.path.exists(template_path):
+    template_path = template_root / template_filename # Uso de Path object
+    if not template_path.exists():
+        # En AWS Lambda, esta ruta debe existir dentro del paquete de despliegue
         raise FileNotFoundError(f"Plantilla '{template_filename}' no encontrada en '{template_root}'.")
+    
     document = Document(template_path)
     replace_text_in_document(document, replacements)
+    
+    # Se utiliza os.path.exists para consistencia con el código original, pero 'pathlib' es mejor
     if user_image_path and os.path.exists(user_image_path):
         try:
             document.add_paragraph()
+            # El texto debe agregarse antes de la imagen para aparecer antes
             document.add_paragraph(data.get('nombre_completo_de_la_persona_que_firma_la_solicitud', 'N/A') if data else 'N/A')
             document.add_picture(user_image_path, width=Inches(2.5))
         except Exception as ex:
@@ -176,6 +189,7 @@ def generate_single_document(template_filename, template_root, replacements, use
             document.add_paragraph("⚠ No se pudo insertar la imagen del usuario.")
     else:
         document.add_paragraph("⚠ Imagen de firma no encontrada en el servidor.")
+        
     buffer = io.BytesIO()
     document.save(buffer)
     buffer.seek(0)
@@ -185,6 +199,7 @@ def generate_single_document(template_filename, template_root, replacements, use
 # Google Drive Service Account
 # -------------------------
 def _load_service_account_info():
+    # El valor se recomienda que esté en Secrets Manager o cifrado
     raw_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
     if raw_json:
         try:
@@ -208,10 +223,15 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
         return {"success": True, "message": "Subida a Drive deshabilitada (env var)"}
     try:
         service_account_info = _load_service_account_info()
-        creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/drive.file"])
+        scopes = ["https://www.googleapis.com/auth/drive.file"]
+        creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
+        
+        # cache_discovery=False puede ayudar en entornos sin servidor
         service = build('drive', 'v3', credentials=creds, cache_discovery=False)
-        file_metadata = {'name': sanitize_filename(file_name)}
+        
+        file_metadata = {'name': sanitize_filename(file_name), 'mimeType': 'application/zip'}
         zip_buffer.seek(0)
+        
         media = MediaIoBaseUpload(zip_buffer, mimetype='application/zip', resumable=True)
         uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
         return {"success": True, "message": f"Archivo subido correctamente. ID: {uploaded_file.get('id')}"}
@@ -233,6 +253,7 @@ def token_required(required_role='user'):
             if not token:
                 return jsonify({'error': 'Token de acceso faltante. Inicia sesión.'}), 403
             try:
+                # Se utiliza el mismo audience/issuer del código original
                 data = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], audience='strat_and_tax_api', issuer='strat_and_tax_server')
                 current_user = data['sub']
                 role = data.get('role')
@@ -244,6 +265,9 @@ def token_required(required_role='user'):
                 return jsonify({'error': 'Token expirado. Vuelve a iniciar sesión.'}), 401
             except jwt.InvalidTokenError:
                 return jsonify({'error': 'Token inválido o manipulado.'}), 403
+            except Exception as e:
+                logger.error("Error en validación JWT: %s", e)
+                return jsonify({'error': 'Error de servidor al validar token'}), 500
             return f(current_user, *args, **kwargs)
         return decorated
     return decorator
@@ -253,16 +277,26 @@ def token_required(required_role='user'):
 # -------------------------
 @app.route('/login', methods=['POST'])
 def login():
+    # ADVERTENCIA: request.remote_addr puede ser la IP de API Gateway o balanceador, no la del cliente.
+    # El rate limiting debe hacerse en una capa superior o con datos persistentes (DynamoDB/Redis).
     ip = request.remote_addr
     allowed, wait_time = check_rate_limit(ip)
     if not allowed:
         return jsonify({"error": f"Demasiados intentos. Espera {wait_time} segundos"}), 429
-    data = request.get_json()
+    
+    try:
+        data = request.get_json()
+    except Exception:
+        return jsonify({"error": "Petición JSON inválida"}), 400
+    
     username = data.get('username')
     password = data.get('password')
+    
     if not username or not password:
         return jsonify({"error": "Falta usuario o contraseña"}), 400
+        
     user_record = USER_DB.get(username)
+    
     if user_record and bcrypt.checkpw(password.encode('utf-8'), user_record['password_hash']):
         reset_attempts(ip)
         issued_at = datetime.now(timezone.utc)
@@ -289,10 +323,17 @@ def login():
 @token_required(required_role='user')
 def generate_word(current_user):
     logger.info(f"Generación de documentos iniciada por usuario: {current_user}")
+    
+    # ----------------------------------------------------------------------
+    # Adaptación clave: Usar /tmp y evitar operaciones de disco persistentes
+    # ----------------------------------------------------------------------
+    user_image_path = None
+    tmp_dir = None # Inicializar para asegurar el borrado
+    
     try:
+        # Se obtiene data del formulario (multipart/form-data)
         data = request.form.to_dict()
         uploaded_image = request.files.get("imagen_usuario")
-        user_image_path = None
 
         if not data:
             return jsonify({"error": "No data received"}), 400
@@ -300,35 +341,32 @@ def generate_word(current_user):
         servicio = data.get('servicio')
         if not servicio:
             return jsonify({"error": "Debes seleccionar un servicio."}), 400
+            
         carpeta_servicio = SERVICIO_TO_DIR.get(servicio)
         if not carpeta_servicio:
             return jsonify({"error": f"No existe carpeta mapeada para el servicio: {servicio}"}), 404
-        template_root = os.path.join(TEMPLATE_FOLDER, carpeta_servicio)
-        if not os.path.isdir(template_root):
+            
+        # Usa el directorio base de plantillas empaquetado
+        template_root = TEMPLATE_FOLDER / carpeta_servicio 
+        if not template_root.is_dir():
             return jsonify({"error": f"La carpeta de plantillas no existe: {template_root}"}), 404
 
+        # Manejo de la imagen: Guardar en el directorio temporal de Lambda (/tmp)
         if uploaded_image and uploaded_image.filename:
             filename = sanitize_filename(uploaded_image.filename)
             ext = pathlib.Path(filename).suffix.lower()
             if ext not in ALLOWED_IMAGE_EXT:
                 return jsonify({"error": "Tipo de archivo no permitido para imagen."}), 400
-            tmp_dir = tempfile.TemporaryDirectory()
-            tmp_path = pathlib.Path(tmp_dir.name) / filename
-            uploaded_image.save(str(tmp_path))
-            user_image_path = str(tmp_path)
+                
+            # Crear directorio temporal DENTRO de /tmp de Lambda
+            # Usar tempfile.mkdtemp() para un directorio temporal dentro del /tmp de Lambda
+            tmp_dir_path = pathlib.Path(tempfile.gettempdir()) / f"upload_{os.getpid()}"
+            tmp_dir_path.mkdir(exist_ok=True)
+            user_image_path = str(tmp_dir_path / filename)
 
-        # limpiar docs previos
-        try:
-            for filename in os.listdir(GENERATED_DOCS):
-                file_path = os.path.join(GENERATED_DOCS, filename)
-                if os.path.isfile(file_path):
-                    try:
-                        os.remove(file_path)
-                    except Exception as e:
-                        logger.warning("Error al eliminar %s: %s", file_path, e)
-        except FileNotFoundError:
-            pass
-
+            uploaded_image.save(user_image_path)
+            
+        # Generación de datos
         numero_de_contrato_unico = ''.join([str(random.randint(0, 9)) for _ in range(18)])
         descripcion_servicio = servicio
 
@@ -362,13 +400,9 @@ def generate_word(current_user):
                     base = os.path.splitext(template)[0]
                     rfc = data.get('r_f_c', 'N/A')
                     output_filename = f"{sanitize_filename(base)}_{sanitize_filename(descripcion_servicio)}_{sanitize_filename(base)}_{numero_de_contrato_unico}_{sanitize_filename(rfc)}.docx"
-                    try:
-                        output_path = GENERATED_DOCS / output_filename
-                        output_path.parent.mkdir(parents=True, exist_ok=True)
-                        with open(output_path, "wb") as f:
-                            f.write(doc_buffer.getvalue())
-                    except Exception as e:
-                        logger.debug("No se pudo guardar en disco (ok en serverless): %s", e)
+                    
+                    # NOTA: Se elimina la escritura a GENERATED_DOCS y GENERATED_ZIPS
+                    # zip_file.writestr escribe directamente al buffer sin usar disco persistente
                     zip_file.writestr(output_filename, doc_buffer.getvalue())
                 except Exception as e:
                     logger.exception("Error generando documento %s: %s", template, e)
@@ -377,41 +411,41 @@ def generate_word(current_user):
         zip_buffer.seek(0)
         final_zip_name = f"{sanitize_filename(descripcion_servicio)}_{numero_de_contrato_unico}_{sanitize_filename(data.get('r_f_c', 'N/A'))}.zip"
 
-        try:
-            tmp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
-            tmp_zip.write(zip_buffer.getvalue())
-            tmp_zip.flush()
-            tmp_zip_name = tmp_zip.name
-            tmp_zip.close()
-            try:
-                pathlib.Path(GENERATED_ZIPS).mkdir(parents=True, exist_ok=True)
-                dest = pathlib.Path(GENERATED_ZIPS) / final_zip_name
-                with open(tmp_zip_name, "rb") as s, open(dest, "wb") as d:
-                    d.write(s.read())
-            except Exception:
-                pass
-        except Exception as e:
-            logger.warning("No se pudo crear zip temporal en disco: %s", e)
-            tmp_zip_name = None
-
-        zip_buffer.seek(0)
+        # Subida a Google Drive
         upload_result = authenticate_and_upload_to_drive(final_zip_name, zip_buffer)
         logger.info("GOOGLE DRIVE: %s", upload_result.get("message"))
 
         zip_buffer.seek(0)
+        
+        # En AWS Lambda/API Gateway, el uso de send_file desde un io.BytesIO es ideal.
         response = send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name=final_zip_name)
-
-        try:
-            if tmp_zip_name and os.path.exists(tmp_zip_name):
-                os.remove(tmp_zip_name)
-        except Exception:
-            pass
-
+        
         return response
 
+    except RequestEntityTooLarge:
+        # Manejo de error de tamaño de archivo excedido
+        return jsonify({"error": "El archivo es demasiado grande."}), 413
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
         logger.exception("Error interno en endpoint: %s", e)
         return jsonify({"error": f"Error interno: {str(e)}"}), 500
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    finally:
+        # Limpiar directorio temporal si se creó para la imagen (CRÍTICO en Lambda)
+        if user_image_path:
+            try:
+                # user_image_path apunta al archivo, borramos el archivo y el directorio temporal si se creó
+                file_to_remove = pathlib.Path(user_image_path)
+                if file_to_remove.exists():
+                    os.remove(file_to_remove)
+                    # Intentamos eliminar el directorio padre temporal si está vacío
+                    try:
+                        file_to_remove.parent.rmdir()
+                    except OSError:
+                        # Si no está vacío (otro archivo), simplemente ignoramos
+                        pass
+            except Exception as e:
+                logger.warning("No se pudo limpiar el archivo temporal: %s", e)
+                
+# NOTA: Se elimina 'if __name__ == "__main__": app.run(debug=True)'
+# El deployment en AWS Lambda se hace a través de un handler (ej. de Zappa o Mangum) que importará 'app'.

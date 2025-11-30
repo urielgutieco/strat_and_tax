@@ -106,7 +106,8 @@
 
         /* 📝 ESTILOS DE CONTENIDO Y FORMULARIOS */
         .page-content {
-            padding: 60px 20px; /* Incrementado para más espacio vertical */
+            padding: 60px 20px;
+            /* Incrementado para más espacio vertical */
             min-height: calc(100vh - 140px);
             /* Ajuste para que el footer quede abajo */
         }
@@ -114,13 +115,15 @@
         .card {
             background: var(--panel);
             /* Usar panel */
-            padding: 90px; /* Padding interior estándar de panel/tarjeta */
+            padding: 90px;
+            /* Padding interior estándar de panel/tarjeta */
             /* Se eliminan los anchos no funcionales (width: 200%) y se restablece el max-width */
-            width: 100%; 
+            width: 100%;
             /* Ajuste de ancho: 90% del contenedor */
-            max-width: 450px; 
+            max-width: 450px;
             /* Máximo ancho típico para formularios centrados */
-            margin: 0 auto; /* Centrar el contenedor horizontalmente */
+            margin: 0 auto;
+            /* Centrar el contenedor horizontalmente */
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             /* Usar sombra */
@@ -407,7 +410,7 @@
                     <input type="file" id="imagen_usuario" name="imagen_usuario" accept="image/*">
                 </div>
 
-                <button type="submit" class="btn-submit">Enviar</button>
+                <button type="submit" class="btn-submit">Generar Solicitud y Descargar Word</button>
 
             </form>
         </div>
@@ -420,12 +423,12 @@
         &copy; 2025 Strat & Tax. Todos los derechos reservados.
     </footer>
 
-<script>
-        // 🔑 Credenciales Fijas (para el ejemplo)
-        const userDB = {
-            username: "admin",
-            password: "1234"
-        };
+    <script>
+        // 🔑 Credenciales Fijas (para el ejemplo de demostración - DEBE SER REEMPLAZADO POR UNA LLAMADA A SU BACKEND REAL)
+        // const userDB = {
+        //     username: "admin",
+        //     password: "1234"
+        // };
 
         const loginCard = document.getElementById("login-card");
         const formSolicitud = document.getElementById("form-solicitud");
@@ -433,6 +436,11 @@
         const errorMsg = document.getElementById("error-msg");
         const usuarioInput = document.getElementById("usuario");
         const passwordInput = document.getElementById("password");
+
+        // ⚠️ ADECUACIÓN CRÍTICA: Definir la URL base de su API Gateway / Load Balancer en AWS
+        const API_BASE_URL = "https://tucustomdomain.com/api"; 
+        // Ejemplo para entorno de prueba:
+        // const API_BASE_URL = "https://main.dqrw8x5b2nh6g.amplifyapp.com"; 
 
         /**
          * Controla la visibilidad de los elementos basados en si el usuario está logueado.
@@ -444,6 +452,7 @@
                 loginCard.style.display = "none";
                 formSolicitud.style.display = "block";
                 logoutBtn.style.display = "block";
+                document.getElementById('error-msg').style.display = "none"; // Asegurar que se oculta
             } else {
                 // Si no está logueado: Mostrar login y ocultar formulario/logout
                 formSolicitud.style.display = "none";
@@ -460,21 +469,29 @@
          * Verifica el estado de la sesión almacenado en localStorage al cargar la página.
          */
         function checkLoginState() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            displayUI(isLoggedIn);
+            // El estado de login ahora se verifica primariamente con la existencia del JWT
+            const token = localStorage.getItem('jwtToken');
+            displayUI(!!token);
         }
 
         /**
          * Maneja el proceso de inicio de sesión.
          */
         async function login() {
-            const user = usuarioInput.value;
-            const pass = passwordInput.value;
+            const user = usuarioInput.value.trim();
+            const pass = passwordInput.value.trim();
 
             errorMsg.style.display = "none";
 
+            if (!user || !pass) {
+                errorMsg.textContent = "Por favor, ingrese usuario y contraseña.";
+                errorMsg.style.display = "block";
+                return;
+            }
+
             try {
-                const response = await fetch('/login', {
+                // ⚠️ ADECUACIÓN: Usar la URL base + el endpoint de login
+                const response = await fetch(`${API_BASE_URL}/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -482,24 +499,24 @@
                     body: JSON.stringify({ username: user, password: pass })
                 });
 
-            if (response.ok) {
-                const data = await response.json();
-                // 1. Guardar el token JWT
-                localStorage.setItem('jwtToken', data.token); 
-                // 2. Marcar como logueado (opcional, el token es la clave)
-                localStorage.setItem('isLoggedIn', 'true'); 
-                displayUI(true);
-            } else {
-                const errorData = await response.json();
-                errorMsg.textContent = `Error: ${errorData.error}`;
+                if (response.ok) {
+                    const data = await response.json();
+                    // 1. Guardar el token JWT
+                    localStorage.setItem('jwtToken', data.token);
+                    // 2. Marcar como logueado
+                    localStorage.setItem('isLoggedIn', 'true');
+                    displayUI(true);
+                } else {
+                    const errorData = await response.json().catch(() => ({ error: 'Respuesta del servidor no válida' }));
+                    errorMsg.textContent = `Error: ${errorData.error || response.statusText}`;
+                    errorMsg.style.display = "block";
+                }
+            } catch (error) {
+                errorMsg.textContent = "No se pudo contactar al servidor para el login. Revise la URL de la API.";
                 errorMsg.style.display = "block";
+                console.error("Login error:", error);
             }
-        } catch (error) {
-            errorMsg.textContent = "No se pudo contactar al servidor para el login.";
-            errorMsg.style.display = "block";
-            console.error("Login error:", error);
         }
-}
 
         /**
          * Maneja el proceso de cierre de sesión.
@@ -507,13 +524,14 @@
          */
         function logout() {
             localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('jwtToken'); // ¡CRÍTICO!
+            localStorage.removeItem('jwtToken'); // ¡CRÍTICO! Eliminar el token
             displayUI(false);
         }
 
         // --- Lógica del formulario de solicitud ---
 
-        const PYTHON_ENDPOINT = "/generate-word";
+        // ⚠️ ADECUACIÓN: Usar la URL base + el endpoint de generación
+        const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`; 
         const form = document.getElementById('solicitudForm');
         const responseMessage = document.getElementById('response-message');
         const submitButton = document.querySelector('.btn-submit');
@@ -527,7 +545,8 @@
 
         function showMessage(text, type) {
             responseMessage.textContent = text;
-            responseMessage.className = `message ${type}`;
+            // Estilos para los mensajes (success/error, puedes definirlos en el CSS)
+            responseMessage.className = `message ${type}`; 
             responseMessage.style.display = 'block';
         }
 
@@ -536,12 +555,12 @@
             responseMessage.style.display = 'none';
             submitButton.disabled = true;
             submitButton.textContent = 'Procesando...';
-            
+
             try {
                 const formData = new FormData(form);
-                
+
                 // OBTENER EL TOKEN Y PREPARAR HEADERS
-                const token = localStorage.getItem('jwtToken'); 
+                const token = localStorage.getItem('jwtToken');
                 if (!token) {
                     showMessage("Error de autenticación: Token JWT no encontrado. Inicie sesión de nuevo.", 'error');
                     submitButton.disabled = false;
@@ -549,11 +568,12 @@
                     return;
                 }
 
+                // ⚠️ CRÍTICO: El fetch DEBE incluir el token en el header de Authorization
                 const response = await fetch(PYTHON_ENDPOINT, {
                     method: 'POST',
-                    // ¡CRÍTICO! Agregar el encabezado de autorización
-                    headers: { 
-                        'Authorization': `Bearer ${token}` 
+                    headers: {
+                        // Importante: No se usa 'Content-Type': 'application/json' con FormData
+                        'Authorization': `Bearer ${token}`
                     },
                     body: formData
                 });
@@ -574,21 +594,25 @@
                     a.download = filename;
                     document.body.appendChild(a);
                     a.click();
+                    document.body.removeChild(a); // Limpiar el elemento 
                     window.URL.revokeObjectURL(url);
 
-                    // Mensaje de éxito de la descarga. El éxito de la carga a Drive
-                    // se muestra en la consola del servidor Python.
-                    showMessage(`Documento generado y DESCARGADO: ${filename}. (Revise la consola del servidor Python para el estado de Google Drive)`, 'success');
+                    // Mensaje de éxito de la descarga.
+                    showMessage(`Documento generado y DESCARGADO: ${filename}.`, 'success');
 
+                } else if (response.status === 401) {
+                    // Manejo de error de token expirado/inválido
+                    showMessage("Sesión expirada o no autorizada. Inicie sesión de nuevo.", 'error');
+                    logout(); // Forzar cierre de sesión
                 } else {
-                    const errorData = await response.json();
-                    showMessage(`Error: ${errorData.error}`, 'error');
+                    const errorData = await response.json().catch(() => ({ error: `Error HTTP ${response.status}` }));
+                    showMessage(`Error: ${errorData.error || response.statusText}`, 'error');
                 }
 
-            } 
+            }
             catch (error) {
-                console.error(error);
-                showMessage("No se pudo contactar al servidor Python.", "error");
+                console.error("Error en el envío del formulario:", error);
+                showMessage("No se pudo contactar al servidor Python. Revise la URL de la API.", "error");
             }
 
             submitButton.disabled = false;
