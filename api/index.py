@@ -46,7 +46,7 @@ logger = logging.getLogger("generate-word-app")
 # -------------------------
 # JWT Config
 # -------------------------
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_SECRET_KEY = os.getenv("$2b$12$tUa5Z8rF.E.q2H/i.q5U7.G.R6A1W9V4P3I0Y2X5Q8T7S6R5C41")
 if not JWT_SECRET_KEY:
     raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en Vercel.")
 JWT_ALGORITHM = "HS256"

@@ -466,35 +466,54 @@
 
         /**
          * Maneja el proceso de inicio de sesión.
-         * Guarda el estado en localStorage si las credenciales son correctas.
          */
-        function login() {
+        async function login() {
             const user = usuarioInput.value;
             const pass = passwordInput.value;
 
-            if (user === userDB.username && pass === userDB.password) {
-                // Credenciales correctas: Marcar como logueado en localStorage
-                localStorage.setItem('isLoggedIn', 'true');
+            errorMsg.style.display = "none";
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+            if (response.ok) {
+                const data = await response.json();
+                // 1. Guardar el token JWT
+                localStorage.setItem('jwtToken', data.token); 
+                // 2. Marcar como logueado (opcional, el token es la clave)
+                localStorage.setItem('isLoggedIn', 'true'); 
                 displayUI(true);
             } else {
-                // Credenciales incorrectas: Mostrar mensaje de error
+                const errorData = await response.json();
+                errorMsg.textContent = `Error: ${errorData.error}`;
                 errorMsg.style.display = "block";
             }
+        } catch (error) {
+            errorMsg.textContent = "No se pudo contactar al servidor para el login.";
+            errorMsg.style.display = "block";
+            console.error("Login error:", error);
         }
+}
 
         /**
          * Maneja el proceso de cierre de sesión.
          * Elimina el estado de localStorage.
          */
         function logout() {
-            // Eliminar el estado de logueo de localStorage
             localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('jwtToken'); // ¡CRÍTICO!
             displayUI(false);
         }
 
         // --- Lógica del formulario de solicitud ---
 
-        const PYTHON_ENDPOINT = "/api/index";
+        const PYTHON_ENDPOINT = "/generate-word";
         const form = document.getElementById('solicitudForm');
         const responseMessage = document.getElementById('response-message');
         const submitButton = document.querySelector('.btn-submit');
@@ -517,12 +536,25 @@
             responseMessage.style.display = 'none';
             submitButton.disabled = true;
             submitButton.textContent = 'Procesando...';
-
+            
             try {
                 const formData = new FormData(form);
+                
+                // OBTENER EL TOKEN Y PREPARAR HEADERS
+                const token = localStorage.getItem('jwtToken'); 
+                if (!token) {
+                    showMessage("Error de autenticación: Token JWT no encontrado. Inicie sesión de nuevo.", 'error');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Generar Solicitud y Descargar Word';
+                    return;
+                }
 
                 const response = await fetch(PYTHON_ENDPOINT, {
                     method: 'POST',
+                    // ¡CRÍTICO! Agregar el encabezado de autorización
+                    headers: { 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: formData
                 });
 
@@ -553,7 +585,8 @@
                     showMessage(`Error: ${errorData.error}`, 'error');
                 }
 
-            } catch (error) {
+            } 
+            catch (error) {
                 console.error(error);
                 showMessage("No se pudo contactar al servidor Python.", "error");
             }
