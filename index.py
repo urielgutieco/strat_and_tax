@@ -1,5 +1,4 @@
-# Código actualizado con los ajustes solicitados
-# (Se respetó toda la estructura original. SOLO se corrigió la sección indicada.)
+# Código actualizado con los ajustes solicitados para DynamoDB
 
 import os
 import io
@@ -66,21 +65,33 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 1
 
 # -------------------------
-# Usuarios controlados
+# DynamoDB Configuración y Conexión
 # -------------------------
-USER_DB = {
-    "usuario1": {
-        "password_hash": b"$2b$12$hGq9p0aQ4w7xS2zV.B.c.8A.D.E.F3G4H5I6J7K8L9M0N1O2P3Q4",
-        "role": "user"
-    },
-    "usuario2": {
-        "password_hash": b"$2b$12$Xyz123Abc456Def789Ghi012Jkl345Mno678Pqr901Stu234Vwx",
-        "role": "user"
-    }
-}
+USER_TABLE_NAME = os.getenv("USER_TABLE_NAME", "Users")
+# Inicializa el recurso de DynamoDB (fuera del handler si es posible, o usa el cliente)
+try:
+    dynamo_resource = boto3.resource('dynamodb')
+    users_table = dynamo_resource.Table(USER_TABLE_NAME)
+except Exception as e:
+    logger.error(f"Error al conectar con DynamoDB/Tabla: {USER_TABLE_NAME}. {e}")
+    # No lanzamos error para permitir el arranque, pero las rutas de login fallarán.
+
+# Función para buscar usuario en DynamoDB
+def get_user_from_db(username):
+    try:
+        response = users_table.get_item(
+            Key={'username': username}
+        )
+        return response.get('Item')
+    except ClientError as e:
+        logger.error(f"Error DynamoDB al obtener usuario {username}: {e.response['Error']['Message']}")
+        return None
+    except Exception as e:
+        logger.error(f"Error general al obtener usuario {username}: {e}")
+        return None
 
 # -------------------------
-# Rate limiting básico
+# Rate limiting básico (Mantenido en memoria por simplicidad/estructura original)
 # -------------------------
 MAX_ATTEMPTS = 5
 BLOCK_TIME_SECONDS = 300
@@ -143,7 +154,7 @@ TEMPLATE_FILES = [
 ]
 
 # -------------------------
-# Utilidades
+# Utilidades (Sin cambios)
 # -------------------------
 def sanitize_filename(name: str) -> str:
     name = secure_filename(name)
@@ -204,7 +215,7 @@ def get_secret_value(secret_name):
         raise
 
 # -------------------------
-# Google Drive Service Account
+# Google Drive Service Account (Sin cambios)
 # -------------------------
 def _load_service_account_info():
     sm_name = os.getenv("GOOGLE_SERVICE_ACCOUNT_SECRET_NAME")
@@ -272,7 +283,7 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
 
 
 # -------------------------
-# Decorador JWT
+# Decorador JWT (MODIFICADO para usar DynamoDB)
 # -------------------------
 def token_required(required_role='user'):
     def decorator(f):
@@ -294,10 +305,18 @@ def token_required(required_role='user'):
                 current_user = data['sub']
                 role = data.get('role')
 
-                if current_user not in USER_DB:
-                    return jsonify({'error': 'Usuario no autorizado'}), 403
+                # --- VERIFICACIÓN ADICIONAL CONTRA DYNAMODB ---
+                user_db_entry = get_user_from_db(current_user)
+                
+                # 1. Verifica que el usuario del token exista en la DB (Control de Revocación/Eliminación)
+                if not user_db_entry:
+                    return jsonify({'error': 'Usuario no autorizado o eliminado'}), 403
+                
+                # 2. Verifica que el rol del token coincida con el rol requerido
+                # Aunque el rol está en el token, se podría verificar el rol actualizado de la DB si es necesario.
                 if role != required_role:
                     return jsonify({'error': 'No tienes permisos'}), 403
+                # ----------------------------------------------
 
             except jwt.ExpiredSignatureError:
                 return jsonify({'error': 'Token expirado'}), 401
@@ -312,7 +331,7 @@ def token_required(required_role='user'):
     return decorator
 
 # -------------------------
-# Login
+# Login (MODIFICADO para usar DynamoDB)
 # -------------------------
 @app.route('/login', methods=['POST'])
 def login():
@@ -328,30 +347,36 @@ def login():
     if not username or not password:
         return jsonify({"error": "Faltan datos"}), 400
 
-    user = USER_DB.get(username)
-    if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash']):
-        reset_attempts(ip)
-        issued = datetime.now(timezone.utc)
-        exp = issued + timedelta(hours=JWT_EXPIRATION_HOURS)
+    # --- LECTURA DE DYNAMODB ---
+    user = get_user_from_db(username)
+    
+    if user:
+        # DynamoDB almacena el hash como string, lo convertimos a bytes para bcrypt
+        password_hash_bytes = user['password_hash'].encode('utf-8')
+        
+        if bcrypt.checkpw(password.encode('utf-8'), password_hash_bytes):
+            reset_attempts(ip)
+            issued = datetime.now(timezone.utc)
+            exp = issued + timedelta(hours=JWT_EXPIRATION_HOURS)
 
-        payload = {
-            'sub': username,
-            'role': user['role'],
-            'iat': int(issued.timestamp()),
-            'nbf': int(issued.timestamp()),
-            'exp': int(exp.timestamp()),
-            'aud': 'strat_and_tax_api',
-            'iss': 'strat_and_tax_server'
-        }
+            payload = {
+                'sub': username,
+                'role': user['role'], # Usamos el rol de DynamoDB
+                'iat': int(issued.timestamp()),
+                'nbf': int(issued.timestamp()),
+                'exp': int(exp.timestamp()),
+                'aud': 'strat_and_tax_api',
+                'iss': 'strat_and_tax_server'
+            }
 
-        token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-        return jsonify({"message": "Login exitoso", "token": token}), 200
+            token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+            return jsonify({"message": "Login exitoso", "token": token}), 200
 
     record_failed_attempt(ip)
     return jsonify({"error": "Credenciales inválidas"}), 401
 
 # -------------------------
-# generate-word
+# generate-word (Sin cambios)
 # -------------------------
 @app.route('/generate-word', methods=['POST'])
 @token_required(required_role='user')
@@ -463,11 +488,3 @@ def generate_word(current_user):
 
 # Handler Lambda
 handler = Mangum(app)
-
-# Sugerencias de corrección y mejoras
-# 1. Revisa la validación de usuarios: asegúrate de que las contraseñas estén correctamente hasheadas y comparadas con bcrypt.
-# 2. Verifica la configuración de Google Drive: revisa que las credenciales y rutas estén correctamente cargadas.
-# 3. Revisa el manejo de archivos temporales: utiliza context managers para evitar fugas de recursos.
-# 4. Añade más validaciones a las rutas para evitar entradas maliciosas.
-# 5. Implementa logs más detallados en operaciones críticas.
-
