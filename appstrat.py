@@ -31,6 +31,12 @@ from functools import wraps
 from collections import defaultdict
 from werkzeug.exceptions import RequestEntityTooLarge
 
+# --- NUEVOS IMPORTS PARA ENVÍO DE CORREO (SES) ---
+import email.encoders
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+# ------------------------------------------------
+
 # -------------------------
 # Configuración Flask / Serverless
 # -------------------------
@@ -91,6 +97,14 @@ def get_user_from_db(username):
         return None
 
 # -------------------------
+# AWS SES Config (NUEVA CONFIGURACIÓN)
+# -------------------------
+# La dirección de correo verificada en SES que usará el remitente.
+SES_SOURCE_EMAIL = os.getenv("SES_SOURCE_EMAIL", "noreply@example.com") 
+# La dirección fija a la que se enviarán todos los documentos.
+DESTINATION_EMAIL = os.getenv("DESTINATION_EMAIL") 
+
+# -------------------------
 # Rate limiting básico (Mantenido en memoria por simplicidad/estructura original)
 # -------------------------
 MAX_ATTEMPTS = 5
@@ -140,7 +154,7 @@ SERVICIO_TO_DIR = {
     "Servicios de administracion o gestion de proyectos o programas urbanos": "gestion_proyectos_programas_urbanos",
     "Ingenieria civil": "ingenieria_civil",
     "Ingenieria de carreteras": "ingenieria_carreteras",
-    "Ingenieria deinfraestructura de instalaciones o fabricas": "infraestructura_instalaciones_fabricas",
+    "Ingenieria de infraestructura de instalaciones o fabricas": "infraestructura_instalaciones_fabricas",
     "Servicios de mantenimiento e instalacion de equipo pesado": "mantenimiento_instalacion_equipo_pesado",
     "Servicio de mantenimiento y reparacion de equipo pesado": "mantenimiento_reparacion_equipo_pesado",
 }
@@ -281,6 +295,54 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
         logger.exception("Error al autenticar o subir a Drive: %s", e)
         return {"success": False, "message": str(e)}
 
+# -------------------------
+# NUEVA FUNCIÓN: Envío de correo con adjunto vía AWS SES
+# -------------------------
+def send_email_with_attachment(zip_buffer, filename, recipient_email):
+    """Envía un correo con el archivo ZIP adjunto usando AWS SES."""
+    if not recipient_email:
+        logger.warning("DESTINATION_EMAIL no configurado. Omitiendo envío por correo.")
+        return {"success": False, "message": "DESTINATION_EMAIL no configurado"}
+
+    logger.info(f"Intentando enviar correo a {recipient_email} con el archivo: {filename}")
+    
+    # 1. Construir el mensaje MIME
+    msg = MIMEMultipart()
+    msg['Subject'] = f"Documentos Generados: {filename.replace('.zip', '')}"
+    msg['From'] = SES_SOURCE_EMAIL
+    msg['To'] = recipient_email
+
+    # Mensaje de cuerpo simple (texto)
+    msg.attach(MIMEApplication("Adjunto encontrará el archivo ZIP con los documentos generados.", _subtype="plain"))
+
+    # 2. Adjuntar el ZIP
+    zip_buffer.seek(0)
+    att = MIMEApplication(zip_buffer.read(), _subtype="zip")
+    att.add_header('Content-Disposition', 'attachment', filename=filename)
+    email.encoders.encode_base64(att)
+    msg.attach(att)
+    
+    # Reset buffer position after reading for the next step (send_file)
+    zip_buffer.seek(0)
+
+    # 3. Enviar vía SES
+    try:
+        ses_client = boto3.client('ses')
+        response = ses_client.send_raw_email(
+            Source=SES_SOURCE_EMAIL,
+            Destinations=[recipient_email],
+            RawMessage={'Data': msg.as_string()}
+        )
+        return {"success": True, "message": f"Correo enviado. ID: {response['MessageId']}"}
+    except ClientError as e:
+        error_message = e.response['Error']['Message']
+        logger.error(f"Error al enviar correo vía SES: {error_message}")
+        # Importante: La dirección SES_SOURCE_EMAIL y DESTINATION_EMAIL deben estar verificadas en SES.
+        return {"success": False, "message": f"Error SES: {error_message}"}
+    except Exception as e:
+        logger.exception("Error general al enviar correo")
+        return {"success": False, "message": f"Error general al enviar correo: {e}"}
+
 
 # -------------------------
 # Decorador JWT (MODIFICADO para usar DynamoDB)
@@ -376,7 +438,7 @@ def login():
     return jsonify({"error": "Credenciales inválidas"}), 401
 
 # -------------------------
-# generate-word (Sin cambios)
+# generate-word (MODIFICADO para incluir envío por correo)
 # -------------------------
 @app.route('/generate-word', methods=['POST'])
 @token_required(required_role='user')
@@ -460,9 +522,17 @@ def generate_word(current_user):
         zip_buffer.seek(0)
         final_zip = f"{sanitize_filename(servicio)}_{numero}_{sanitize_filename(data.get('r_f_c', 'N/A'))}.zip"
 
+        # 1. Subida a Google Drive
         upload = authenticate_and_upload_to_drive(final_zip, zip_buffer)
         logger.info("Drive: %s", upload.get("message"))
+        
+        # 2. Envío por Correo Electrónico (NUEVO)
+        # El zip_buffer se restableció en authenticate_and_upload_to_drive, 
+        # pero send_email_with_attachment lo restablece de nuevo.
+        email_result = send_email_with_attachment(zip_buffer, final_zip, DESTINATION_EMAIL)
+        logger.info("Email: %s", email_result.get("message"))
 
+        # 3. Retorno al cliente
         zip_buffer.seek(0)
         return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name=final_zip)
 
