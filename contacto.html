@@ -424,12 +424,7 @@
     </footer>
 
     <script>
-        // 🔑 Credenciales Fijas (para el ejemplo de demostración - DEBE SER REEMPLAZADO POR UNA LLAMADA A SU BACKEND REAL)
-        // const userDB = {
-        //     username: "admin",
-        //     password: "1234"
-        // };
-
+        // Variables DOM
         const loginCard = document.getElementById("login-card");
         const formSolicitud = document.getElementById("form-solicitud");
         const logoutBtn = document.getElementById("logout-btn");
@@ -438,9 +433,12 @@
         const passwordInput = document.getElementById("password");
 
         // ⚠️ ADECUACIÓN CRÍTICA: Definir la URL base de su API Gateway / Load Balancer en AWS
-        const API_BASE_URL = "https://main.dqrw8x5b2nh6g.amplifyapp.com"; 
-        // Ejemplo para entorno de prueba:
-        // const API_BASE_URL = "https://main.dqrw8x5b2nh6g.amplifyapp.com"; 
+        // Reemplaza esta URL por la de tu API Gateway (sin barra al final)
+        const API_BASE_URL = "https://main.dqrw8x5b2nh6g.amplifyapp.com";
+
+        // Endpoint Python (usar API_BASE_URL)
+        const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
+        const LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
 
         /**
          * Controla la visibilidad de los elementos basados en si el usuario está logueado.
@@ -452,13 +450,12 @@
                 loginCard.style.display = "none";
                 formSolicitud.style.display = "block";
                 logoutBtn.style.display = "block";
-                document.getElementById('error-msg').style.display = "none"; // Asegurar que se oculta
+                errorMsg.style.display = "none";
             } else {
                 // Si no está logueado: Mostrar login y ocultar formulario/logout
                 formSolicitud.style.display = "none";
                 logoutBtn.style.display = "none";
                 loginCard.style.display = "block";
-                // Limpiar campos de login y mensaje de error
                 usuarioInput.value = "";
                 passwordInput.value = "";
                 errorMsg.style.display = "none";
@@ -469,7 +466,6 @@
          * Verifica el estado de la sesión almacenado en localStorage al cargar la página.
          */
         function checkLoginState() {
-            // El estado de login ahora se verifica primariamente con la existencia del JWT
             const token = localStorage.getItem('jwtToken');
             displayUI(!!token);
         }
@@ -478,43 +474,43 @@
          * Maneja el proceso de inicio de sesión.
          */
         async function login() {
-            const user = usuarioInput.value.trim();
-            const pass = passwordInput.value.trim();
+            const username = usuarioInput.value.trim();
+            const password = passwordInput.value.trim();
 
             errorMsg.style.display = "none";
 
-            if (!user || !pass) {
-                errorMsg.textContent = "Por favor, ingrese usuario y contraseña.";
+            if (!username || !password) {
+                errorMsg.innerText = "Completa todos los campos.";
                 errorMsg.style.display = "block";
                 return;
             }
 
             try {
-                // ⚠️ ADECUACIÓN: Usar la URL base + el endpoint de login
-                const response = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username: user, password: pass })
+                const response = await fetch(LOGIN_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    // 1. Guardar el token JWT
-                    localStorage.setItem('jwtToken', data.token);
-                    // 2. Marcar como logueado
-                    localStorage.setItem('isLoggedIn', 'true');
-                    displayUI(true);
-                } else {
-                    const errorData = await response.json().catch(() => ({ error: 'Respuesta del servidor no válida' }));
-                    errorMsg.textContent = `Error: ${errorData.error || response.statusText}`;
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    errorMsg.innerText = data.error || "Error de acceso";
                     errorMsg.style.display = "block";
+                    return;
                 }
-            } catch (error) {
-                errorMsg.textContent = "No se pudo contactar al servidor para el login. Revise la URL de la API.";
+
+                // Guardar token JWT (clave usada en el resto del frontend)
+                localStorage.setItem("jwtToken", data.token || data?.token);
+                localStorage.setItem("isLoggedIn", "true");
+
+                // Mostrar el formulario
+                displayUI(true);
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.innerText = "Error de conexión";
                 errorMsg.style.display = "block";
-                console.error("Login error:", error);
             }
         }
 
@@ -529,9 +525,6 @@
         }
 
         // --- Lógica del formulario de solicitud ---
-
-        // ⚠️ ADECUACIÓN: Usar la URL base + el endpoint de generación
-        const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`; 
         const form = document.getElementById('solicitudForm');
         const responseMessage = document.getElementById('response-message');
         const submitButton = document.querySelector('.btn-submit');
@@ -545,8 +538,7 @@
 
         function showMessage(text, type) {
             responseMessage.textContent = text;
-            // Estilos para los mensajes (success/error, puedes definirlos en el CSS)
-            responseMessage.className = `message ${type}`; 
+            responseMessage.className = `message ${type}`;
             responseMessage.style.display = 'block';
         }
 
