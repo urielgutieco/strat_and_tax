@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # Comando para iniciar la aplicación (reemplaza con tu comando de inicio)
-CMD ["python", "app.py"]
+CMD ["python", "appstrat.py"]
