@@ -423,7 +423,9 @@
         &copy; 2025 Strat & Tax. Todos los derechos reservados.
     </footer>
 
- <script>
+<script type="module">
+    import { Amplify, API } from "https://cdn.jsdelivr.net/npm/aws-amplify/+esm";
+
     const loginCard = document.getElementById("login-card");
     const formSolicitud = document.getElementById("form-solicitud");
     const logoutBtn = document.getElementById("logout-btn");
@@ -431,10 +433,38 @@
     const usuarioInput = document.getElementById("usuario");
     const passwordInput = document.getElementById("password");
 
-    const API_BASE_URL = "https://main.drh93y5i2fkgi.amplifyapp.com/contacto.html";
+    /* ===========================
+       CONFIGURACIÓN DE AMPLIFY
+       =========================== */
+    Amplify.configure({
+        Auth: {
+            region: "us-east-2",
+            userPoolId: "us-east-2_sWJSQ4mrD",
+            userPoolWebClientId: "arn:aws:cognito-idp:us-east-2:165046688056:userpool/us-east-2_sWJSQ4mrD",
+            mandatorySignIn: true
+        },
+        API: {
+            endpoints: [
+                {
+                    name: "stratantax_f_p_y-API-genword",
+                    endpoint: "https://vj3leje6ee.execute-api.us-east-2.amazonaws.com/prod",
+                    region: "us-east-2"
+                }
+            ]
+        }
+    });
+
+    /* ===========================
+       TUS CONSTANTES DE ENDPOINTS
+       =========================== */
+    const API_BASE_URL = "https://vj3leje6ee.execute-api.us-east-2.amazonaws.com/prod";
     const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
     const LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
 
+
+    /* ===========================
+       CONTROL DE UI
+       =========================== */
     function displayUI(isLoggedIn) {
         loginCard.style.display = isLoggedIn ? "none" : "block";
         formSolicitud.style.display = isLoggedIn ? "block" : "none";
@@ -447,14 +477,34 @@
     }
 
     function checkLoginState() {
-        const token = localStorage.getItem('jwtToken');
+        const token = localStorage.getItem("jwtToken");
         displayUI(!!token);
     }
 
+
+    /* ===========================
+       LLAMADA API PROTEGIDA
+       =========================== */
+    async function llamarApiProtegida() {
+        try {
+            const response = await API.get(
+                "stratantax_f_p_y-API-genword",
+                "/ruta-del-recurso",
+                {}
+            );
+            console.log("Respuesta API Cognito:", response);
+        } catch (error) {
+            console.error("Error al llamar API protegida:", error);
+        }
+    }
+
+
+    /* ===========================
+       LOGIN (Tu estructura respetada)
+       =========================== */
     async function login() {
         const username = usuarioInput.value.trim();
         const password = passwordInput.value.trim();
-        errorMsg.style.display = "none";
 
         if (!username || !password) {
             errorMsg.innerText = "Completa todos los campos.";
@@ -477,7 +527,7 @@
                 return;
             }
 
-            localStorage.setItem("jwtToken", data.token || data?.token);
+            localStorage.setItem("jwtToken", data.token);
             localStorage.setItem("isLoggedIn", "true");
             displayUI(true);
 
@@ -488,89 +538,91 @@
         }
     }
 
+
+    /* ===========================
+       LOGOUT
+       =========================== */
     function logout() {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('jwtToken');
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("jwtToken");
         displayUI(false);
     }
 
-    const form = document.getElementById('solicitudForm');
-    const responseMessage = document.getElementById('response-message');
-    const submitButton = document.querySelector('.btn-submit');
-    const servicioSelect = document.getElementById('servicio');
-    const descHiddenInput = document.getElementById('descripcion_del_servicio');
 
-    servicioSelect.addEventListener('change', () => {
+    /* ===========================
+       FORMULARIO PYTHON
+       =========================== */
+    const form = document.getElementById("solicitudForm");
+    const responseMessage = document.getElementById("response-message");
+    const submitButton = document.querySelector(".btn-submit");
+    const servicioSelect = document.getElementById("servicio");
+    const descHiddenInput = document.getElementById("descripcion_del_servicio");
+
+    servicioSelect.addEventListener("change", () => {
         descHiddenInput.value = servicioSelect.value;
     });
 
     function showMessage(text, type) {
         responseMessage.textContent = text;
         responseMessage.className = `message ${type}`;
-        responseMessage.style.display = 'block';
+        responseMessage.style.display = "block";
     }
 
-    form.addEventListener('submit', async function (e) {
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        responseMessage.style.display = 'none';
+        responseMessage.style.display = "none";
         submitButton.disabled = true;
-        submitButton.textContent = 'Procesando...';
+        submitButton.textContent = "Procesando...";
 
         try {
             const formData = new FormData(form);
-            const token = localStorage.getItem('jwtToken');
+            const token = localStorage.getItem("jwtToken");
+
             if (!token) {
-                showMessage("Error de autenticación: Token JWT no encontrado. Inicie sesión de nuevo.", 'error');
-                submitButton.disabled = false;
-                submitButton.textContent = 'Generar Solicitud y Descargar Word';
+                showMessage("Token expirado. Inicia sesión.", "error");
+                logout();
                 return;
             }
 
             const response = await fetch(PYTHON_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData
             });
 
             if (response.ok) {
                 const blob = await response.blob();
-                const contentDisposition = response.headers.get('Content-Disposition');
+                const contentDisposition = response.headers.get("Content-Disposition");
                 let filename = "Documentos_Generados.zip";
+
                 if (contentDisposition && contentDisposition.includes("filename=")) {
-                    const match = contentDisposition.match(/filename="(.+?)"/);
-                    if (match) filename = match[1];
+                    filename = contentDisposition.match(/filename="(.+?)"/)[1];
                 }
 
                 const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement("a");
                 a.href = url;
                 a.download = filename;
-                document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
 
-                showMessage(`Documento generado y DESCARGADO: ${filename}.`, 'success');
-            } else if (response.status === 401 || response.status === 403) {
-                const errorData = await response.json().catch(() => ({}));
-                showMessage(`Sesión expirada o no autorizada. ${errorData.error || 'Inicie sesión de nuevo.'}`, 'error');
-                logout();
+                showMessage(`Documento descargado: ${filename}`, "success");
             } else {
-                const errorData = await response.json().catch(() => ({ error: `Error HTTP ${response.status}` }));
-                showMessage(`Error: ${errorData.error || response.statusText}`, 'error');
+                const errorData = await response.json().catch(() => ({}));
+                showMessage(errorData.error || "Error en la API", "error");
             }
 
         } catch (error) {
-            console.error("Error en el envío del formulario:", error);
-            showMessage("No se pudo contactar al servidor Python. Revise la URL de la API.", "error");
+            console.error("Error enviando formulario:", error);
+            showMessage("No se pudo contactar al servidor Python.", "error");
         }
 
         submitButton.disabled = false;
-        submitButton.textContent = 'Generar Solicitud y Descargar Word';
+        submitButton.textContent = "Generar Solicitud y Descargar Word";
     });
 
     checkLoginState();
- </script>
+</script>
 
 </body>
 
