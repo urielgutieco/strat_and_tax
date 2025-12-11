@@ -70,9 +70,9 @@ else:
 # --------------------------
 # AWS COGNITO Config
 # --------------------------
-COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID")
-COGNITO_CLIENT_ID = os.getenv("COGNITO_CLIENT_ID")
-COGNITO_REGION = os.getenv("AWS_REGION", "us-east-1")
+COGNITO_USER_POOL_ID = os.getenv("us-east-2_sWJSQ4mrD")
+COGNITO_CLIENT_ID = os.getenv("4hdk0upvrq9h0p9s8v5ib1th48")
+COGNITO_REGION = os.getenv("arn:aws:cognito-idp:us-east-2:165046688056:userpool/us-east-2_sWJSQ4mrD", "us-east-2")
 
 if not COGNITO_USER_POOL_ID or not COGNITO_CLIENT_ID:
     logger.error("COGNITO_USER_POOL_ID o COGNITO_CLIENT_ID no configurados.")
