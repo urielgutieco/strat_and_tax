@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Aplicación Serverless de Stratandtax
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Handler: app.handler  # <--- IMPORTANTE: 'app' (archivo) . 'handler' (función Mangum)
+    Runtime: python3.11
+    
+Resources:
+  StratandtaxFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .  # La raíz del proyecto
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        # Si tu código necesita acceso a S3 o DynamoDB, agrégalo aquí
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
