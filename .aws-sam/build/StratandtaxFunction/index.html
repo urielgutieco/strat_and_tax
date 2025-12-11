@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Strat & Tax - Despacho Fiscal Profesional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* VARIABLES DE ESTILO GLOBAL (Profesional Ejecutivo - Modificado para integrar el formulario) */
+
+        :root {
+            --bg: #9c9c9cce;
+            /* Gris Claro (Fondo general del segundo código) */
+            --accent: #323c47;
+            /* Azul navy (Primary del segundo código) */
+            --accent-light: #565758;
+            /* Azul navy más claro */
+            --muted: #515457;
+            /* Gris medio */
+            --panel: #bbbbbb;
+            /* Blanco para paneles/formularios */
+            --border: #70859a;
+            /* Gris claro para bordes */
+            --shadow: 0 4px 12px rgba(71, 82, 199, 0.1);
+            /* Sombra sutil */
+            --radius: 8px;
+            /* Bordes redondeados */
+            --font-main: "Inter", system-ui, sans-serif;
+            --color-secondary: #d4b537;
+            /* Dorado (Accent del segundo código) */
+        }
+        /* ESTILOS GENERALES */
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: var(--bg);
+            color: var(--accent);
+            font-family: var(--font-main);
+            line-height: 1.6;
+        }
+        /* Header */
+
+        header {
+            background: var(--accent);
+            color: #001f3fb3;
+            /* Cambiado a blanco para contraste */
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 6.8rem;
+            font-weight: 600;
+        }
+        /* ... Estilos anteriores ... */
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        /* ➡️ INICIO: Estilos para la imagen del logo */
+        .logo-container {
+            display: flex;
+            /* Para alinear la imagen y el texto */
+            align-items: center;
+            gap: 10px;
+            /* Espacio entre la imagen y el texto */
+        }
+
+        .logo-img {
+            height: 100px;
+            /* Tamaño del logo (ajusta según necesites) */
+            width: auto;
+            /* Si tu logo tiene fondo blanco y el header es azul, necesitarás este estilo: */
+            /* background-color: white; 
+			border-radius: 4px;
+			padding: 2px; */
+        }
+        /* ⬅️ FIN: Estilos para la imagen del logo */
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        /* ... Estilos posteriores ... */
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav a {
+            color: #ffffff75;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--color-secondary);
+            /* Uso del color Dorado como hover */
+        }
+        /* Secciones */
+
+        section {
+            padding: 60px 20px;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            /* Imagen de fondo comentada o cambiada a un color sólido si no está disponible */
+            background: linear-gradient(to right, var(--accent), var(--accent-light)), url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+            color: #c6c4c4;
+            text-align: center;
+            padding: 100px 20px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #001f3fb3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin: 0;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: var(--color-secondary);
+            /* Dorado */
+            color: var(--accent);
+            /* Azul Navy */
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #b89417;
+            /* Dorado más oscuro */
+            color: var(--accent);
+        }
+
+        .about,
+        .services {
+            background: var(--bg);
+            /* Fondo de sección para separación visual */
+            margin-bottom: 40px;
+        }
+
+        .about .container-content,
+        .services .container-content {
+            background: var(--panel);
+            /* Contenido en panel blanco */
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .about-content,
+        .services-content {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .about img,
+        .services img {
+            width: 50%;
+            border-radius: var(--radius);
+            transition: transform 0.3s ease;
+        }
+
+        .about img:hover,
+        .services img:hover {
+            transform: scale(1.03);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .service-item {
+            background: var(--bg);
+            /* Gris Claro */
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            transition: box-shadow 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .service-item:hover {
+            box-shadow: 0 6px 16px #0b73dc26;
+        }
+
+        .service-item h3 {
+            color: var(--accent-light);
+            margin-top: 0;
+        }
+
+        .service-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            margin-bottom: 15px;
+        }
+        /* Formulario - Adaptado al diseño de la primera plantilla */
+
+        .form-section {
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--panel);
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border-radius: var(--radius);
+        }
+
+        .container h2 {
+            color: var(--accent);
+            font-family: var(--font-main);
+            border-bottom: 3px solid var(--color-secondary);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: grid;
+            gap: 5px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="number"],
+        textarea,
+        /* Agregamos select para mantener el mismo estilo */
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: var(--accent);
+            background: #cdcece;
+            /* Fondo gris claro para campos */
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        /* Agregamos select:focus */
+        select:focus {
+            border-color: var(--accent-light);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-submit {
+            background: var(--accent);
+            color: #e1dfdf;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-light);
+        }
+
+        .message {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: var(--radius);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #e6ffe6;
+            color: #008000;
+        }
+
+        .error {
+            background-color: #ffe6e6;
+            color: #ff0000;
+        }
+        /* Footer */
+
+        footer {
+            background: var(--accent);
+            color: #c4c1c1;
+            text-align: center;
+            padding: 20px;
+        }
+        /* Responsive */
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .about-content,
+            .services-content {
+                flex-direction: column;
+            }
+
+            .about img,
+            .services img {
+                width: 90%;
+            }
+
+            .about .container-content,
+            .services .container-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="stratandtax.png" alt="Logo Strat & Tax" class="logo-img">
+                <div class="logo"></div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#about">Sobre Nosotros</a></li>
+                    <li><a href="contacto.html">Registro</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <h1>Bienvenido a Strat & Tax</h1>
+            <p>Servicios y estrategias fiscales, para su tranquilidad financiera.</p>
+            <a href="contacto.html" class="btn">Login</a>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="container-content">
+            <h2>Sobre Nosotros</h2>
+            <div class="about-content">
+                <img src="https://media.licdn.com/dms/image/v2/D4E12AQElDwzi49j9BA/article-cover_image-shrink_720_1280/B4EZj3el9iIQAU-/0/1756498649702?e=2147483647&v=beta&t=6cP67ONBUCzwpyE4TpK7JFHxcajTM3o-zxW3ztKyHD0"
+                    alt="Oficina profesional">
+                <div>
+                    <p>En **Strat & Tax**, somos un despacho fiscal dedicado a ofrecer soluciones integrales en materia
+                        tributaria. Nuestro equipo de expertos está comprometido con la excelencia y la confidencialidad
+                        para ayudar a nuestros clientes a navegar por el complejo mundo de las finanzas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="services">
+        <div class="container-content">
+            <h2>Nuestros Servicios</h2>
+            <div class="services-content">
+                <div>
+                    <p>Ofrecemos una amplia gama de servicios fiscales adaptados a sus necesidades. Confíe en nuestra
+                        experiencia.</p>
+                    <div class="services-grid">
+                        <div class="service-item">
+                            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=400&q=80"
+                                alt="Consultoría fiscal">
+                            <h3>Consultoría Fiscal</h3>
+                            <p>Asesoramiento personalizado para optimizar su carga tributaria.</p>
+                        </div>
+                        <div class="service-item">
+                            <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80"
+                                alt="Auditorías">
+                            <h3>Auditorías</h3>
+                            <p>Revisiones exhaustivas para asegurar el cumplimiento normativo.</p>
+                        </div>
+                        <div class="service-item">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
+                                alt="Planificación financiera">
+                            <h3>Planificación Financiera</h3>
+                            <p>Estrategias para su futuro financiero y reducción de riesgos.</p>
+                        </div>
+                    </div>
+                </div>
+                <img src="https://ecovismexico.mx/v2/wp-content/uploads/2023/08/consultor-financiero-consultor-contador-profesional-1-scaled.jpg"
+                    alt="Reunión de negocios">
+            </div>
+        </div>
+
+    <footer>
+        &copy; 2025 Strat & Tax. Todos los derechos reservados.
+    </footer>
+
+    <script>
+        const PYTHON_ENDPOINT = "/api/index";// O la ruta que configuraste en Vercel
+            // O directamente a la URL final de tu dominio en Vercel, si estás en otro origen.
+            // Si el frontend está en el mismo dominio, la ruta relativa es preferible.
+        const form = document.getElementById('solicitudForm');
+        const responseMessage = document.getElementById('response-message');
+        const submitButton = document.querySelector('.btn-submit');
+
+        function showMessage(text, type) {
+            responseMessage.textContent = text;
+            responseMessage.className = `message ${type}`;
+            responseMessage.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            responseMessage.style.display = 'none';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Procesando...';
+
+            try {
+                // Crear FormData para aceptar imagen
+                const formData = new FormData(form);
+
+                const response = await fetch(PYTHON_ENDPOINT, {
+                    method: 'POST',
+                    body: formData // NO usar JSON
+                });
+
+                if (response.ok) {
+
+                    const sel = document.getElementById('servicio');
+                    const desc = document.getElementById('descripcion_del_servicio');
+                    sel.addEventListener('change', () => {
+                        desc.value = sel.value; // la descripción será el texto del servicio seleccionado
+                    });
+                    const blob = await response.blob();
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = "Documentos_Generados.zip";
+
+                    if (contentDisposition && contentDisposition.includes("filename=")) {
+                        const match = contentDisposition.match(/filename="(.+?)"/);
+                        if (match) filename = match[1];
+                    }
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+
+                    showMessage(`Documento generado: ${filename}`, 'success');
+
+                } else {
+                    const errorData = await response.json();
+                    showMessage(`Error: ${errorData.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage("No se pudo contactar al servidor Python.", "error");
+            }
+
+            submitButton.disabled = false;
+            submitButton.textContent = 'Generar Solicitud y Descargar Word';
+        });
+    </script>
+
+
+</body>
+
+</html>

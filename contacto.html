@@ -423,197 +423,154 @@
         &copy; 2025 Strat & Tax. Todos los derechos reservados.
     </footer>
 
-    <script>
-        // Variables DOM
-        const loginCard = document.getElementById("login-card");
-        const formSolicitud = document.getElementById("form-solicitud");
-        const logoutBtn = document.getElementById("logout-btn");
-        const errorMsg = document.getElementById("error-msg");
-        const usuarioInput = document.getElementById("usuario");
-        const passwordInput = document.getElementById("password");
+ <script>
+    const loginCard = document.getElementById("login-card");
+    const formSolicitud = document.getElementById("form-solicitud");
+    const logoutBtn = document.getElementById("logout-btn");
+    const errorMsg = document.getElementById("error-msg");
+    const usuarioInput = document.getElementById("usuario");
+    const passwordInput = document.getElementById("password");
 
-        // ⚠️ ADECUACIÓN CRÍTICA: Definir la URL base de su API Gateway / Load Balancer en AWS
-        // Reemplaza esta URL por la de tu API Gateway (sin barra al final)
-        const API_BASE_URL = "https://main.drh93y5i2fkgi.amplifyapp.com/contacto.html";
+    const API_BASE_URL = "https://main.drh93y5i2fkgi.amplifyapp.com/contacto.html";
+    const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
+    const LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
 
-        // Endpoint Python (usar API_BASE_URL)
-        const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
-        const LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
+    function displayUI(isLoggedIn) {
+        loginCard.style.display = isLoggedIn ? "none" : "block";
+        formSolicitud.style.display = isLoggedIn ? "block" : "none";
+        logoutBtn.style.display = isLoggedIn ? "block" : "none";
+        errorMsg.style.display = "none";
+        if (!isLoggedIn) {
+            usuarioInput.value = "";
+            passwordInput.value = "";
+        }
+    }
 
-        /**
-         * Controla la visibilidad de los elementos basados en si el usuario está logueado.
-         * @param {boolean} isLoggedIn - Estado de la sesión.
-         */
-        function displayUI(isLoggedIn) {
-            if (isLoggedIn) {
-                // Si está logueado: Ocultar login y mostrar formulario/logout
-                loginCard.style.display = "none";
-                formSolicitud.style.display = "block";
-                logoutBtn.style.display = "block";
-                errorMsg.style.display = "none";
-            } else {
-                // Si no está logueado: Mostrar login y ocultar formulario/logout
-                formSolicitud.style.display = "none";
-                logoutBtn.style.display = "none";
-                loginCard.style.display = "block";
-                usuarioInput.value = "";
-                passwordInput.value = "";
-                errorMsg.style.display = "none";
-            }
+    function checkLoginState() {
+        const token = localStorage.getItem('jwtToken');
+        displayUI(!!token);
+    }
+
+    async function login() {
+        const username = usuarioInput.value.trim();
+        const password = passwordInput.value.trim();
+        errorMsg.style.display = "none";
+
+        if (!username || !password) {
+            errorMsg.innerText = "Completa todos los campos.";
+            errorMsg.style.display = "block";
+            return;
         }
 
-        /**
-         * Verifica el estado de la sesión almacenado en localStorage al cargar la página.
-         */
-        function checkLoginState() {
-            const token = localStorage.getItem('jwtToken');
-            displayUI(!!token);
-        }
+        try {
+            const response = await fetch(LOGIN_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
 
-        /**
-         * Maneja el proceso de inicio de sesión.
-         */
-        async function login() {
-            const username = usuarioInput.value.trim();
-            const password = passwordInput.value.trim();
+            const data = await response.json().catch(() => ({}));
 
-            errorMsg.style.display = "none";
-
-            if (!username || !password) {
-                errorMsg.innerText = "Completa todos los campos.";
+            if (!response.ok) {
+                errorMsg.innerText = data.error || "Error de acceso";
                 errorMsg.style.display = "block";
                 return;
             }
 
-            try {
-                const response = await fetch(LOGIN_ENDPOINT, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password })
-                });
+            localStorage.setItem("jwtToken", data.token || data?.token);
+            localStorage.setItem("isLoggedIn", "true");
+            displayUI(true);
 
-                const data = await response.json().catch(() => ({}));
-
-                if (!response.ok) {
-                    errorMsg.innerText = data.error || "Error de acceso";
-                    errorMsg.style.display = "block";
-                    return;
-                }
-
-                // Guardar token JWT (clave usada en el resto del frontend)
-                localStorage.setItem("jwtToken", data.token || data?.token);
-                localStorage.setItem("isLoggedIn", "true");
-
-                // Mostrar el formulario
-                displayUI(true);
-
-            } catch (err) {
-                console.error(err);
-                errorMsg.innerText = "Error de conexión";
-                errorMsg.style.display = "block";
-            }
+        } catch (err) {
+            console.error(err);
+            errorMsg.innerText = "Error de conexión";
+            errorMsg.style.display = "block";
         }
+    }
 
-        /**
-         * Maneja el proceso de cierre de sesión.
-         * Elimina el estado de localStorage.
-         */
-        function logout() {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('jwtToken'); // ¡CRÍTICO! Eliminar el token
-            displayUI(false);
-        }
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('jwtToken');
+        displayUI(false);
+    }
 
-        // --- Lógica del formulario de solicitud ---
-        const form = document.getElementById('solicitudForm');
-        const responseMessage = document.getElementById('response-message');
-        const submitButton = document.querySelector('.btn-submit');
-        const servicioSelect = document.getElementById('servicio');
-        const descHiddenInput = document.getElementById('descripcion_del_servicio');
+    const form = document.getElementById('solicitudForm');
+    const responseMessage = document.getElementById('response-message');
+    const submitButton = document.querySelector('.btn-submit');
+    const servicioSelect = document.getElementById('servicio');
+    const descHiddenInput = document.getElementById('descripcion_del_servicio');
 
-        // Función para actualizar el campo oculto de descripción al cambiar el servicio
-        servicioSelect.addEventListener('change', () => {
-            descHiddenInput.value = servicioSelect.value;
-        });
+    servicioSelect.addEventListener('change', () => {
+        descHiddenInput.value = servicioSelect.value;
+    });
 
-        function showMessage(text, type) {
-            responseMessage.textContent = text;
-            responseMessage.className = `message ${type}`;
-            responseMessage.style.display = 'block';
-        }
+    function showMessage(text, type) {
+        responseMessage.textContent = text;
+        responseMessage.className = `message ${type}`;
+        responseMessage.style.display = 'block';
+    }
 
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            responseMessage.style.display = 'none';
-            submitButton.disabled = true;
-            submitButton.textContent = 'Procesando...';
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        responseMessage.style.display = 'none';
+        submitButton.disabled = true;
+        submitButton.textContent = 'Procesando...';
 
-            try {
-                const formData = new FormData(form);
-
-                // OBTENER EL TOKEN Y PREPARAR HEADERS
-                const token = localStorage.getItem('jwtToken');
-                if (!token) {
-                    showMessage("Error de autenticación: Token JWT no encontrado. Inicie sesión de nuevo.", 'error');
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Generar Solicitud y Descargar Word';
-                    return;
-                }
-
-                // ⚠️ CRÍTICO: El fetch DEBE incluir el token en el header de Authorization
-                const response = await fetch(PYTHON_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        // Importante: No se usa 'Content-Type': 'application/json' con FormData
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const contentDisposition = response.headers.get('Content-Disposition');
-                    let filename = "Documentos_Generados.zip";
-
-                    if (contentDisposition && contentDisposition.includes("filename=")) {
-                        const match = contentDisposition.match(/filename="(.+?)"/);
-                        if (match) filename = match[1];
-                    }
-
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a); // Limpiar el elemento 
-                    window.URL.revokeObjectURL(url);
-
-                    // Mensaje de éxito de la descarga.
-                    showMessage(`Documento generado y DESCARGADO: ${filename}.`, 'success');
-
-                } else if (response.status === 401) {
-                    // Manejo de error de token expirado/inválido
-                    showMessage("Sesión expirada o no autorizada. Inicie sesión de nuevo.", 'error');
-                    logout(); // Forzar cierre de sesión
-                } else {
-                    const errorData = await response.json().catch(() => ({ error: `Error HTTP ${response.status}` }));
-                    showMessage(`Error: ${errorData.error || response.statusText}`, 'error');
-                }
-
-            }
-            catch (error) {
-                console.error("Error en el envío del formulario:", error);
-                showMessage("No se pudo contactar al servidor Python. Revise la URL de la API.", "error");
+        try {
+            const formData = new FormData(form);
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                showMessage("Error de autenticación: Token JWT no encontrado. Inicie sesión de nuevo.", 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Generar Solicitud y Descargar Word';
+                return;
             }
 
-            submitButton.disabled = false;
-            submitButton.textContent = 'Generar Solicitud y Descargar Word';
-        });
+            const response = await fetch(PYTHON_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
 
-        // 🚀 Inicializar la verificación del estado de login al cargar la página
-        checkLoginState();
-    </script>
+            if (response.ok) {
+                const blob = await response.blob();
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = "Documentos_Generados.zip";
+                if (contentDisposition && contentDisposition.includes("filename=")) {
+                    const match = contentDisposition.match(/filename="(.+?)"/);
+                    if (match) filename = match[1];
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showMessage(`Documento generado y DESCARGADO: ${filename}.`, 'success');
+            } else if (response.status === 401 || response.status === 403) {
+                const errorData = await response.json().catch(() => ({}));
+                showMessage(`Sesión expirada o no autorizada. ${errorData.error || 'Inicie sesión de nuevo.'}`, 'error');
+                logout();
+            } else {
+                const errorData = await response.json().catch(() => ({ error: `Error HTTP ${response.status}` }));
+                showMessage(`Error: ${errorData.error || response.statusText}`, 'error');
+            }
+
+        } catch (error) {
+            console.error("Error en el envío del formulario:", error);
+            showMessage("No se pudo contactar al servidor Python. Revise la URL de la API.", "error");
+        }
+
+        submitButton.disabled = false;
+        submitButton.textContent = 'Generar Solicitud y Descargar Word';
+    });
+
+    checkLoginState();
+ </script>
 
 </body>
 

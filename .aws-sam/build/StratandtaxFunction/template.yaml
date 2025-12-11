@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Aplicación Python/Mangum para Stratandtax
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    # El Runtime debe coincidir con la versión de Python que usaste en venv
+    Runtime: python3.11 
+
+Resources:
+  StratandtaxFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      # El Handler (punto de entrada) es: archivo.función
+      # En tu caso, el archivo es 'app.py' y la función es 'handler = Mangum(app)'
+      Handler: app.handler
+      CodeUri: .  # SAM buscará el código y requirements.txt aquí
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        # Si usas Boto3 o Google API, puedes necesitar políticas adicionales
+        # Por ejemplo, si accedes a S3:
+        # - S3ReadPolicy: {BucketName: !Ref MyS3Bucket}
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{proxy+} # Esto captura todas las rutas (ej: /login, /docs)
+            Method: ANY

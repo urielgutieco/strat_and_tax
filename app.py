@@ -1,5 +1,3 @@
-# Código actualizado con los ajustes solicitados para DynamoDB
-
 import os
 import io
 import zipfile
@@ -10,46 +8,58 @@ import logging
 import tempfile
 import pathlib
 import re
-import bcrypt
-import jwt
 import time
 import boto3
-from botocore.exceptions import ClientError
-from mangum import Mangum  # si usas Mangum para Lambda
+
+from botocore.exceptions import ClientError, ParamValidationError
+from mangum import Mangum
 from googleapiclient.errors import HttpError
-from flask import Response, make_response
-from flask import Flask, request, send_file, jsonify, abort
+
+from flask import (
+    Flask, request, send_file, jsonify, abort, Response, make_response
+)
 from flask_cors import CORS
+
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import RequestEntityTooLarge
+
 from docx import Document
 from docx.shared import Inches
+
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
-from datetime import datetime, timedelta, timezone
-from functools import wraps
-from collections import defaultdict
-from werkzeug.exceptions import RequestEntityTooLarge
 
-# --- NUEVOS IMPORTS PARA ENVÍO DE CORREO (SES) ---
+from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+from functools import wraps
+
+# --------------------------
+# SES Imports
+# --------------------------
 import email.encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-# ------------------------------------------------
 
-# -------------------------
-# Configuración Flask / Serverless
-# -------------------------
+# --------------------------
+# App Configuración Base
+# --------------------------
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("generate-word-app")
 
+# Tamaños máximos configurables
 MAX_CONTENT_LENGTH_BYTES = int(os.getenv("MAX_CONTENT_LENGTH_BYTES", 20 * 1024 * 1024))
 ALLOWED_IMAGE_EXT = {".png", ".jpg", ".jpeg"}
+
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH_BYTES
 app.config["JSON_SORT_KEYS"] = False
 
+# Carpeta de plantillas
 TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word")
 TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
 
+# CORS
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins:
     origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
@@ -57,81 +67,40 @@ if allowed_origins:
 else:
     CORS(app, resources={r"/generate-word": {"origins": []}})
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("generate-word-app")
+# --------------------------
+# AWS COGNITO Config
+# --------------------------
+COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID")
+COGNITO_CLIENT_ID = os.getenv("COGNITO_CLIENT_ID")
+COGNITO_REGION = os.getenv("AWS_REGION", "us-east-1")
 
-# -------------------------
-# JWT Config
-# -------------------------
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", None)
-if not JWT_SECRET_KEY:
-    raise EnvironmentError("JWT_SECRET_KEY no configurada. Configúrala en AWS Lambda Environment Variables.")
+if not COGNITO_USER_POOL_ID or not COGNITO_CLIENT_ID:
+    logger.error("COGNITO_USER_POOL_ID o COGNITO_CLIENT_ID no configurados.")
 
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 1
-
-# -------------------------
-# DynamoDB Configuración y Conexión
-# -------------------------
-USER_TABLE_NAME = os.getenv("USER_TABLE_NAME", "Users")
-# Inicializa el recurso de DynamoDB (fuera del handler si es posible, o usa el cliente)
 try:
-    dynamo_resource = boto3.resource('dynamodb')
-    users_table = dynamo_resource.Table(USER_TABLE_NAME)
+    cognito_client = boto3.client("cognito-idp", region_name=COGNITO_REGION)
 except Exception as e:
-    logger.error(f"Error al conectar con DynamoDB/Tabla: {USER_TABLE_NAME}. {e}")
-    # No lanzamos error para permitir el arranque, pero las rutas de login fallarán.
+    logger.error(f"Error al inicializar cliente Cognito: {e}")
 
-# Función para buscar usuario en DynamoDB
-def get_user_from_db(username):
-    try:
-        response = users_table.get_item(
-            Key={'username': username}
-        )
-        return response.get('Item')
-    except ClientError as e:
-        logger.error(f"Error DynamoDB al obtener usuario {username}: {e.response['Error']['Message']}")
-        return None
-    except Exception as e:
-        logger.error(f"Error general al obtener usuario {username}: {e}")
-        return None
+# --------------------------
+# AWS SES Config
+# --------------------------
+SES_SOURCE_EMAIL = os.getenv("SES_SOURCE_EMAIL", "noreply@example.com")
+DESTINATION_EMAIL = os.getenv("DESTINATION_EMAIL")
 
-# -------------------------
-# AWS SES Config (NUEVA CONFIGURACIÓN)
-# -------------------------
-# La dirección de correo verificada en SES que usará el remitente.
-SES_SOURCE_EMAIL = os.getenv("SES_SOURCE_EMAIL", "noreply@example.com") 
-# La dirección fija a la que se enviarán todos los documentos.
-DESTINATION_EMAIL = os.getenv("DESTINATION_EMAIL") 
-
-# -------------------------
-# Rate limiting básico (Mantenido en memoria por simplicidad/estructura original)
-# -------------------------
+# --------------------------
+# Rate Limiting
+# --------------------------
 MAX_ATTEMPTS = 5
 BLOCK_TIME_SECONDS = 300
-login_attempts = defaultdict(lambda: {"count": 0, "last_attempt": 0, "blocked_until": 0})
 
-def check_rate_limit(ip):
-    entry = login_attempts[ip]
-    now = time.time()
-    if entry["blocked_until"] > now:
-        return False, int(entry["blocked_until"] - now)
-    return True, 0
+login_attempts = defaultdict(
+    lambda: {"count": 0, "last_attempt": 0, "blocked_until": 0}
+)
 
-def record_failed_attempt(ip):
-    entry = login_attempts[ip]
-    now = time.time()
-    entry["count"] += 1
-    entry["last_attempt"] = now
-    if entry["count"] >= MAX_ATTEMPTS:
-        entry["blocked_until"] = now + BLOCK_TIME_SECONDS
-
-def reset_attempts(ip):
-    login_attempts[ip] = {"count": 0, "last_attempt": 0, "blocked_until": 0}
-
-# -------------------------
-# Mapeos de Servicios
-# -------------------------
+# --------------------------
+# Mapeo de Servicios
+# --------------------------
 SERVICIO_TO_DIR = {
     "Servicios de construccion de unidades unifamiliares": "construccion_unifamiliar",
     "Servicios de reparacion o ampliacion o remodelacion de viviendas unifamiliares": "reparacion_remodelacion_unifamiliar",
@@ -160,19 +129,19 @@ SERVICIO_TO_DIR = {
 }
 
 TEMPLATE_FILES = [
-    'plantilla_solicitud.docx',
-    '2.docx',
-    '3.docx',
-    '4.docx',
-    '1.docx',
+    "plantilla_solicitud.docx",
+    "2.docx",
+    "3.docx",
+    "4.docx",
+    "1.docx",
 ]
 
-# -------------------------
-# Utilidades (Sin cambios)
-# -------------------------
+# --------------------------
+# Utilidades
+# --------------------------
 def sanitize_filename(name: str) -> str:
     name = secure_filename(name)
-    name = re.sub(r'[_]{2,}', '_', name)
+    name = re.sub(r"[_]{2,}", "_", name)
     return name[:200]
 
 
@@ -181,6 +150,7 @@ def replace_text_in_document(document, replacements):
         for key, value in replacements.items():
             if key in paragraph.text:
                 paragraph.text = paragraph.text.replace(key, str(value))
+
     for table in document.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -192,8 +162,9 @@ def replace_text_in_document(document, replacements):
 
 def generate_single_document(template_filename, template_root, replacements, user_image_path=None, data=None):
     template_path = template_root / template_filename
+
     if not template_path.exists():
-        raise FileNotFoundError(f"Plantilla '{template_filename}' no encontrada en '{template_root}'.")
+        raise FileNotFoundError(f"Plantilla '{template_filename}' no encontrada.")
 
     document = Document(template_path)
     replace_text_in_document(document, replacements)
@@ -201,13 +172,18 @@ def generate_single_document(template_filename, template_root, replacements, use
     if user_image_path and os.path.exists(user_image_path):
         try:
             document.add_paragraph()
-            document.add_paragraph(data.get('nombre_completo_de_la_persona_que_firma_la_solicitud', 'N/A') if data else 'N/A')
+            document.add_paragraph(
+                data.get(
+                    "nombre_completo_de_la_persona_que_firma_la_solicitud",
+                    "N/A",
+                )
+            )
             document.add_picture(user_image_path, width=Inches(2.5))
         except Exception as ex:
-            logger.warning("No se pudo insertar la imagen del usuario: %s", ex)
+            logger.warning("No se pudo insertar imagen: %s", ex)
             document.add_paragraph("⚠ No se pudo insertar la imagen del usuario.")
     else:
-        document.add_paragraph("⚠ Imagen de firma no encontrada en el servidor.")
+        document.add_paragraph("⚠ Imagen de firma no encontrada.")
 
     buffer = io.BytesIO()
     document.save(buffer)
@@ -217,22 +193,27 @@ def generate_single_document(template_filename, template_root, replacements, use
 
 def get_secret_value(secret_name):
     if not secret_name:
-        raise EnvironmentError("Secret name not provided for Secrets Manager")
+        raise EnvironmentError("Secret name not provided.")
+
     try:
         client = boto3.client("secretsmanager")
         resp = client.get_secret_value(SecretId=secret_name)
+
         if "SecretString" in resp and resp["SecretString"]:
             return resp["SecretString"]
+
         return resp["SecretBinary"]
+
     except ClientError as e:
-        logger.exception("No se pudo obtener el secreto %s: %s", secret_name, e)
+        logger.exception("No se pudo obtener secreto %s: %s", secret_name, e)
         raise
 
-# -------------------------
-# Google Drive Service Account (Sin cambios)
-# -------------------------
+# --------------------------
+# Google Drive Upload
+# --------------------------
 def _load_service_account_info():
     sm_name = os.getenv("GOOGLE_SERVICE_ACCOUNT_SECRET_NAME")
+
     if sm_name:
         raw = get_secret_value(sm_name)
         return json.loads(raw)
@@ -251,199 +232,246 @@ def _load_service_account_info():
 
 def authenticate_and_upload_to_drive(file_name, zip_buffer):
     if os.getenv("DISABLE_DRIVE_UPLOAD", "0") == "1":
-        logger.info("Subida a Drive deshabilitada por variable DISABLE_DRIVE_UPLOAD.")
+        logger.info("Subida a Drive deshabilitada.")
         return {"success": True, "message": "Subida deshabilitada"}
 
     try:
         service_account_info = _load_service_account_info()
     except Exception as e:
-        logger.exception("No se pudo cargar info de service account: %s", e)
+        logger.exception("No se pudo cargar service account: %s", e)
         return {"success": False, "message": str(e)}
 
     scopes = ["https://www.googleapis.com/auth/drive.file"]
+
     try:
-        creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
-        service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+        creds = Credentials.from_service_account_info(
+            service_account_info,
+            scopes=scopes
+        )
+        service = build("drive", "v3", credentials=creds, cache_discovery=False)
 
         file_metadata = {
-            'name': sanitize_filename(file_name),
-            'mimeType': 'application/zip'
+            "name": sanitize_filename(file_name),
+            "mimeType": "application/zip",
         }
 
         drive_folder = os.getenv("DRIVE_FOLDER_ID")
         if drive_folder:
-            file_metadata['parents'] = [drive_folder]
+            file_metadata["parents"] = [drive_folder]
 
         zip_buffer.seek(0)
-        media = MediaIoBaseUpload(zip_buffer, mimetype='application/zip', resumable=False)
+        media = MediaIoBaseUpload(zip_buffer, mimetype="application/zip", resumable=False)
 
         max_retries = 3
         for attempt in range(1, max_retries + 1):
             try:
-                uploaded = service.files().create(
-                    body=file_metadata,
-                    media_body=media,
-                    fields='id'
-                ).execute()
-                return {"success": True, "message": f"Archivo subido. ID: {uploaded.get('id')}"}
+                uploaded = (
+                    service.files()
+                    .create(body=file_metadata, media_body=media, fields="id")
+                    .execute()
+                )
+                return {
+                    "success": True,
+                    "message": f"Archivo subido. ID: {uploaded.get('id')}",
+                }
             except HttpError as he:
-                logger.warning("Error intento %d al subir a Drive: %s", attempt, he)
+                logger.warning("Error en intento %d: %s", attempt, he)
                 if attempt == max_retries:
                     return {"success": False, "message": str(he)}
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
+
     except Exception as e:
-        logger.exception("Error al autenticar o subir a Drive: %s", e)
+        logger.exception("Error general Drive: %s", e)
         return {"success": False, "message": str(e)}
 
-# -------------------------
-# NUEVA FUNCIÓN: Envío de correo con adjunto vía AWS SES
-# -------------------------
+# --------------------------
+# Envío Ses
+# --------------------------
 def send_email_with_attachment(zip_buffer, filename, recipient_email):
-    """Envía un correo con el archivo ZIP adjunto usando AWS SES."""
     if not recipient_email:
-        logger.warning("DESTINATION_EMAIL no configurado. Omitiendo envío por correo.")
+        logger.warning("DESTINATION_EMAIL no configurado.")
         return {"success": False, "message": "DESTINATION_EMAIL no configurado"}
 
-    logger.info(f"Intentando enviar correo a {recipient_email} con el archivo: {filename}")
-    
-    # 1. Construir el mensaje MIME
+    logger.info(f"Enviando correo a {recipient_email}...")
+
     msg = MIMEMultipart()
-    msg['Subject'] = f"Documentos Generados: {filename.replace('.zip', '')}"
-    msg['From'] = SES_SOURCE_EMAIL
-    msg['To'] = recipient_email
+    msg["Subject"] = f"Documentos Generados: {filename.replace('.zip', '')}"
+    msg["From"] = SES_SOURCE_EMAIL
+    msg["To"] = recipient_email
 
-    # Mensaje de cuerpo simple (texto)
-    msg.attach(MIMEApplication("Adjunto encontrará el archivo ZIP con los documentos generados.", _subtype="plain"))
+    msg.attach(MIMEApplication("Adjunto archivo ZIP.", _subtype="plain"))
 
-    # 2. Adjuntar el ZIP
     zip_buffer.seek(0)
     att = MIMEApplication(zip_buffer.read(), _subtype="zip")
-    att.add_header('Content-Disposition', 'attachment', filename=filename)
+    att.add_header("Content-Disposition", "attachment", filename=filename)
     email.encoders.encode_base64(att)
     msg.attach(att)
-    
-    # Reset buffer position after reading for the next step (send_file)
     zip_buffer.seek(0)
 
-    # 3. Enviar vía SES
     try:
-        ses_client = boto3.client('ses')
+        ses_client = boto3.client("ses")
         response = ses_client.send_raw_email(
             Source=SES_SOURCE_EMAIL,
             Destinations=[recipient_email],
-            RawMessage={'Data': msg.as_string()}
+            RawMessage={"Data": msg.as_string()},
         )
         return {"success": True, "message": f"Correo enviado. ID: {response['MessageId']}"}
+
     except ClientError as e:
-        error_message = e.response['Error']['Message']
-        logger.error(f"Error al enviar correo vía SES: {error_message}")
-        # Importante: La dirección SES_SOURCE_EMAIL y DESTINATION_EMAIL deben estar verificadas en SES.
+        error_message = e.response["Error"]["Message"]
+        logger.error("Error SES: %s", error_message)
         return {"success": False, "message": f"Error SES: {error_message}"}
+
     except Exception as e:
-        logger.exception("Error general al enviar correo")
-        return {"success": False, "message": f"Error general al enviar correo: {e}"}
+        logger.exception("Error general SES")
+        return {"success": False, "message": f"Error general: {e}"}
+
+# --------------------------
+# Decorador Token Cognito
+# --------------------------
+def check_rate_limit(ip):
+    entry = login_attempts[ip]
+    now = time.time()
+
+    if entry["blocked_until"] > now:
+        return False, int(entry["blocked_until"] - now)
+
+    return True, 0
 
 
-# -------------------------
-# Decorador JWT (MODIFICADO para usar DynamoDB)
-# -------------------------
-def token_required(required_role='user'):
+def record_failed_attempt(ip):
+    entry = login_attempts[ip]
+    now = time.time()
+
+    entry["count"] += 1
+    entry["last_attempt"] = now
+
+    if entry["count"] >= MAX_ATTEMPTS:
+        entry["blocked_until"] = now + BLOCK_TIME_SECONDS
+
+
+def reset_attempts(ip):
+    login_attempts[ip] = {
+        "count": 0,
+        "last_attempt": 0,
+        "blocked_until": 0,
+    }
+
+
+def token_required(required_role="user"):
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
             token = None
-            auth_header = request.headers.get('Authorization')
-            if auth_header and auth_header.startswith('Bearer '):
-                token = auth_header.split(' ')[1]
+
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+
+            if not token:
+                return jsonify({"error": "Token faltante"}), 401
 
             try:
-                data = jwt.decode(
-                    token,
-                    JWT_SECRET_KEY,
-                    algorithms=[JWT_ALGORITHM],
-                    audience='strat_and_tax_api',
-                    issuer='strat_and_tax_server'
-                )
-                current_user = data['sub']
-                role = data.get('role')
+                response = cognito_client.get_user(AccessToken=token)
+                current_user = response["Username"]
 
-                # --- VERIFICACIÓN ADICIONAL CONTRA DYNAMODB ---
-                user_db_entry = get_user_from_db(current_user)
-                
-                # 1. Verifica que el usuario del token exista en la DB (Control de Revocación/Eliminación)
-                if not user_db_entry:
-                    return jsonify({'error': 'Usuario no autorizado o eliminado'}), 403
-                
-                # 2. Verifica que el rol del token coincida con el rol requerido
-                # Aunque el rol está en el token, se podría verificar el rol actualizado de la DB si es necesario.
-                if role != required_role:
-                    return jsonify({'error': 'No tienes permisos'}), 403
-                # ----------------------------------------------
+                user_role = "user"  # por defecto
 
-            except jwt.ExpiredSignatureError:
-                return jsonify({'error': 'Token expirado'}), 401
-            except jwt.InvalidTokenError:
-                return jsonify({'error': 'Token inválido'}), 403
+                if user_role != required_role:
+                    return jsonify({"error": "Sin permisos"}), 403
+
+            except ClientError as e:
+                error_code = e.response["Error"]["Code"]
+
+                if error_code in [
+                    "NotAuthorizedException",
+                    "ExpiredTokenException",
+                    "InvalidParameterException",
+                ]:
+                    return jsonify({"error": "Token inválido"}), 401
+
+                return jsonify({"error": "Error interno de autenticación"}), 500
+
             except Exception as e:
-                logger.error("Error JWT: %s", e)
-                return jsonify({'error': 'Error al validar token'}), 500
+                logger.error("Error en token_required: %s", e)
+                return jsonify({"error": "Error interno del servidor"}), 500
 
             return f(current_user, *args, **kwargs)
+
         return decorated
+
     return decorator
 
-# -------------------------
-# Login (MODIFICADO para usar DynamoDB)
-# -------------------------
-@app.route('/login', methods=['POST'])
+# --------------------------
+# Login Cognito
+# --------------------------
+@app.route("/login", methods=["POST"])
 def login():
     ip = request.remote_addr
     allowed, wait = check_rate_limit(ip)
+
     if not allowed:
-        return jsonify({"error": f"Demasiados intentos, espera {wait}s"}), 429
+        return jsonify({"error": f"Demasiados intentos. Espera {wait}s"}), 429
 
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get("username")
+    password = data.get("password")
 
     if not username or not password:
         return jsonify({"error": "Faltan datos"}), 400
 
-    # --- LECTURA DE DYNAMODB ---
-    user = get_user_from_db(username)
-    
-    if user:
-        # DynamoDB almacena el hash como string, lo convertimos a bytes para bcrypt
-        password_hash_bytes = user['password_hash'].encode('utf-8')
-        
-        if bcrypt.checkpw(password.encode('utf-8'), password_hash_bytes):
+    if not COGNITO_USER_POOL_ID or not COGNITO_CLIENT_ID:
+        return jsonify({"error": "Falta configuración de Cognito"}), 500
+
+    try:
+        response = cognito_client.initiate_auth(
+            AuthFlow="USER_PASSWORD_AUTH",
+            AuthParameters={
+                "USERNAME": username,
+                "PASSWORD": password,
+            },
+            ClientId=COGNITO_CLIENT_ID,
+        )
+
+        if "AuthenticationResult" in response:
             reset_attempts(ip)
-            issued = datetime.now(timezone.utc)
-            exp = issued + timedelta(hours=JWT_EXPIRATION_HOURS)
 
-            payload = {
-                'sub': username,
-                'role': user['role'], # Usamos el rol de DynamoDB
-                'iat': int(issued.timestamp()),
-                'nbf': int(issued.timestamp()),
-                'exp': int(exp.timestamp()),
-                'aud': 'strat_and_tax_api',
-                'iss': 'strat_and_tax_server'
-            }
+            return jsonify({
+                "message": "Login exitoso",
+                "token": response["AuthenticationResult"]["AccessToken"],
+                "id_token": response["AuthenticationResult"]["IdToken"],
+            }), 200
 
-            token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-            return jsonify({"message": "Login exitoso", "token": token}), 200
+        elif response.get("ChallengeName"):
+            return jsonify({
+                "error": "Se requiere un desafío adicional"
+            }), 403
 
-    record_failed_attempt(ip)
-    return jsonify({"error": "Credenciales inválidas"}), 401
+    except ClientError as e:
+        error = e.response["Error"]["Code"]
 
-# -------------------------
-# generate-word (MODIFICADO para incluir envío por correo)
-# -------------------------
-@app.route('/generate-word', methods=['POST'])
-@token_required(required_role='user')
+        if error in ["NotAuthorizedException", "UserNotFoundException"]:
+            record_failed_attempt(ip)
+            return jsonify({"error": "Credenciales inválidas"}), 401
+
+        if error == "TooManyRequestsException":
+            return jsonify({"error": "Demasiadas solicitudes"}), 429
+
+        logger.error("Error Cognito login: %s", error)
+        return jsonify({"error": "Error interno Cognito"}), 500
+
+    except Exception as e:
+        logger.exception("Error general login")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+
+# --------------------------
+# generate-word (usa Cognito)
+# --------------------------
+@app.route("/generate-word", methods=["POST"])
+@token_required(required_role="user")
 def generate_word(current_user):
-    logger.info(f"Generación solicitada por: {current_user}")
+    logger.info(f"Solicitud de generación: {current_user}")
 
     user_image_path = None
 
@@ -454,8 +482,9 @@ def generate_word(current_user):
         if not data:
             return jsonify({"error": "No data"}), 400
 
-        servicio = data.get('servicio')
+        servicio = data.get("servicio")
         carpeta = SERVICIO_TO_DIR.get(servicio)
+
         if not carpeta:
             return jsonify({"error": f"Servicio desconocido: {servicio}"}), 404
 
@@ -463,28 +492,34 @@ def generate_word(current_user):
         if not template_root.is_dir():
             return jsonify({"error": f"Carpeta no existe: {template_root}"}), 404
 
-        # --- Manejo de imagen temporal ---
+        # Imagen temporal
         if uploaded_image and uploaded_image.filename:
             filename = sanitize_filename(uploaded_image.filename)
             ext = pathlib.Path(filename).suffix.lower()
+
             if ext not in ALLOWED_IMAGE_EXT:
                 return jsonify({"error": "Tipo de imagen no permitido"}), 400
 
             tmp_dir = pathlib.Path(tempfile.gettempdir()) / f"upload_{os.getpid()}"
             tmp_dir.mkdir(exist_ok=True)
+
             user_image_path = str(tmp_dir / filename)
 
             MAX_IMAGE_BYTES = int(os.getenv("MAX_IMAGE_BYTES", 5 * 1024 * 1024))
             uploaded_image.stream.seek(0, io.SEEK_END)
+
             size = uploaded_image.stream.tell()
             uploaded_image.stream.seek(0)
+
             if size > MAX_IMAGE_BYTES:
                 return jsonify({"error": "Imagen demasiado grande"}), 413
 
             uploaded_image.save(user_image_path)
 
-        numero = ''.join([str(random.randint(0, 9)) for _ in range(18)])
+        # Número aleatorio
+        numero = "".join([str(random.randint(0, 9)) for _ in range(18)])
 
+        # Reemplazos
         replacements = {
             '${descripcion_del_servicio}': servicio,
             '${razon_social}': data.get('razon_social', 'N/A'),
@@ -507,54 +542,51 @@ def generate_word(current_user):
             '${comentarios}': data.get('comentarios', 'N/A')
         }
 
+        # ZIP buffer
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for t in TEMPLATE_FILES:
-                try:
-                    doc_buf = generate_single_document(t, template_root, replacements, user_image_path, data)
-                    base = os.path.splitext(t)[0]
-                    rfc = data.get('r_f_c', 'N/A')
-                    outname = f"{sanitize_filename(base)}_{sanitize_filename(servicio)}_{sanitize_filename(base)}_{numero}_{sanitize_filename(rfc)}.docx"
-                    zipf.writestr(outname, doc_buf.getvalue())
-                except Exception as e:
-                    logger.exception("Error generando doc %s: %s", t, e)
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for template_filename in TEMPLATE_FILES:
+                buffer = generate_single_document(
+                    template_filename,
+                    template_root,
+                    replacements,
+                    user_image_path=user_image_path,
+                    data=data
+                )
+
+                zipf.writestr(
+                    f"{template_filename}",
+                    buffer.getvalue()
+                )
 
         zip_buffer.seek(0)
-        final_zip = f"{sanitize_filename(servicio)}_{numero}_{sanitize_filename(data.get('r_f_c', 'N/A'))}.zip"
+        final_filename = f"documentos_{numero}.zip"
 
-        # 1. Subida a Google Drive
-        upload = authenticate_and_upload_to_drive(final_zip, zip_buffer)
-        logger.info("Drive: %s", upload.get("message"))
-        
-        # 2. Envío por Correo Electrónico (NUEVO)
-        # El zip_buffer se restableció en authenticate_and_upload_to_drive, 
-        # pero send_email_with_attachment lo restablece de nuevo.
-        email_result = send_email_with_attachment(zip_buffer, final_zip, DESTINATION_EMAIL)
-        logger.info("Email: %s", email_result.get("message"))
+        # Enviar por correo
+        send_email_with_attachment(zip_buffer, final_filename, DESTINATION_EMAIL)
 
-        # 3. Retorno al cliente
+        # Subir a drive
+        authenticate_and_upload_to_drive(final_filename, zip_buffer)
+
         zip_buffer.seek(0)
-        return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name=final_zip)
+
+        return send_file(
+            zip_buffer,
+            as_attachment=True,
+            download_name=final_filename,
+            mimetype="application/zip",
+        )
 
     except RequestEntityTooLarge:
         return jsonify({"error": "Archivo demasiado grande"}), 413
-    except FileNotFoundError as e:
-        return jsonify({"error": str(e)}), 404
-    except Exception as e:
-        logger.exception("Error interno: %s", e)
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if user_image_path:
-            try:
-                p = pathlib.Path(user_image_path)
-                if p.exists():
-                    os.remove(p)
-                    try:
-                        p.parent.rmdir()
-                    except OSError:
-                        pass
-            except Exception as e:
-                logger.warning("No se pudo limpiar /tmp: %s", e)
 
+    except Exception as e:
+        logger.exception("Error general en generate-word")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+
+# --------------------------
 # Handler Lambda
+# --------------------------
 handler = Mangum(app)
