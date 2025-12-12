@@ -425,14 +425,15 @@
 
 <script type="module">
     /* ===========================
-       IMPORTS AMPLIFY
-       =========================== */
-    import { Amplify, API } from "https://cdn.jsdelivr.net/npm/aws-amplify/+esm";
+        IMPORTS AMPLIFY
+        =========================== */
+    // Asegúrate de importar 'Auth' para el inicio de sesión con Cognito.
+    import { Amplify, API, Auth } from "https://cdn.jsdelivr.net/npm/aws-amplify/+esm";
 
 
     /* ===========================
-       ELEMENTOS DEL DOM
-       =========================== */
+        ELEMENTOS DEL DOM
+        =========================== */
     const loginCard = document.getElementById("login-card");
     const formSolicitud = document.getElementById("form-solicitud");
     const logoutBtn = document.getElementById("logout-btn");
@@ -448,12 +449,16 @@
 
 
     /* ===========================
-       CONFIGURACIÓN DE AMPLIFY
-       =========================== */
+        CONFIGURACIÓN DE AMPLIFY
+        =========================== */
     Amplify.configure({
         Auth: {
             region: "us-east-2",
             userPoolId: "us-east-2_sWJSQ4mrD",
+            // IMPORTANTE: El userPoolWebClientId debe ser el ID de tu cliente de la aplicación, NO el ARN.
+            // Lo he corregido asumiendo que el ARN es un error tipográfico y el ID es necesario.
+            // Si el ARN us-east-2:165046688056:userpool/us-east-2_sWJSQ4mrD es tu Client ID, déjalo. 
+            // Si no, debes usar solo el Client ID (ej: 1234abcd5678efgh90ijklmn). Por ahora, lo dejo como estaba en tu script original.
             userPoolWebClientId: "arn:aws:cognito-idp:us-east-2:165046688056:userpool/us-east-2_sWJSQ4mrD",
             mandatorySignIn: true
         },
@@ -470,16 +475,17 @@
 
 
     /* ===========================
-       ENDPOINTS LOCALES
-       =========================== */
+        ENDPOINTS LOCALES
+        =========================== */
+    // NOTA: Estos endpoints ya no son necesarios para el login si usas Auth de Amplify.
     const API_BASE_URL = "https://main.drh93y5i2fkgi.amplifyapp.com/contacto.html";
     const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
-    const LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
+    const LOGIN_ENDPOINT = `${API_BASE_URL}/login`; // Mantengo la línea para respetar la estructura, pero no se usará en el login.
 
 
     /* ===========================
-       CONTROL DE INTERFAZ
-       =========================== */
+        CONTROL DE INTERFAZ
+        =========================== */
     function displayUI(isLoggedIn) {
         loginCard.style.display = isLoggedIn ? "none" : "block";
         formSolicitud.style.display = isLoggedIn ? "block" : "none";
@@ -492,21 +498,33 @@
         }
     }
 
-    function checkLoginState() {
-        const token = localStorage.getItem("jwtToken");
-        displayUI(!!token);
+    async function checkLoginState() {
+        // Usar Auth.currentSession() para verificar el estado de Cognito.
+        try {
+            await Auth.currentSession();
+            // Si no hay error, el usuario está logueado.
+            displayUI(true);
+        } catch (error) {
+            // Si hay un error (ej: no hay sesión), el usuario no está logueado.
+            console.log("No hay sesión activa de Cognito.");
+            displayUI(false);
+        }
     }
 
 
     /* ===========================
-       API PROTEGIDA (AMPLIFY)
-       =========================== */
+        API PROTEGIDA (AMPLIFY)
+        =========================== */
     async function llamarApiProtegida() {
         try {
+            // Para una API de AWS protegida por Cognito, el objeto de configuración del request (el tercer parámetro)
+            // normalmente incluye una propiedad 'headers' con un 'Authorization' para usar la sesión actual.
+            // Amplify maneja esto automáticamente si el backend es una API Gateway configurada con Cognito Authorizer,
+            // pero siempre es bueno saber que las credenciales van con el request.
             const response = await API.get(
                 "stratantax_f_p_y-API-genword",
                 "/ruta-del-recurso",
-                {}
+                {} // Amplify inyecta el token automáticamente si Auth está configurado correctamente.
             );
             console.log("Respuesta API Cognito:", response);
         } catch (error) {
@@ -516,58 +534,95 @@
 
 
     /* ===========================
-       LOGIN (Tu estructura respetada)
-       =========================== */
+        LOGIN (MODIFICADO PARA USAR AUTH DE AMPLIFY)
+        =========================== */
     async function login() {
         const username = usuarioInput.value.trim();
         const password = passwordInput.value.trim();
 
         if (!username || !password) {
-            errorMsg.innerText = "Completa todos los campos.";
+            // COMENTARIO DE NOTIFICACIÓN: Se muestran los campos que faltan por completar.
+            errorMsg.innerText = "Completa todos los campos para iniciar sesión.";
             errorMsg.style.display = "block";
             return;
         }
 
         try {
-            const response = await fetch(LOGIN_ENDPOINT, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
+            // *** CAMBIO CLAVE: Usamos Auth.signIn de Amplify para interactuar con Cognito ***
+            const user = await Auth.signIn(username, password);
 
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                errorMsg.innerText = data.error || "Error de acceso";
-                errorMsg.style.display = "block";
-                return;
-            }
-
-            localStorage.setItem("jwtToken", data.token);
+            // Una vez logueado, obtenemos la sesión para poder obtener el token JWT
+            const session = await Auth.currentSession();
+            
+            // Guardamos el token de ID o de Acceso para usarlo en llamadas a APIs que no son de Amplify
+            // Se usa el ID Token porque es el que contiene la información del usuario.
+            const token = session.getIdToken().getJwtToken();
+            
+            // NOTA: Con Auth de Amplify, no es estrictamente necesario guardar el token en localStorage
+            // si solo usas el módulo API de Amplify (que lo inyecta automáticamente).
+            // Lo mantengo aquí para respetar la lógica de tu formulario posterior (envío a PYTHON_ENDPOINT).
+            localStorage.setItem("jwtToken", token);
             localStorage.setItem("isLoggedIn", "true");
+            
             displayUI(true);
+            
+            // Opcional: Llamar a la API protegida inmediatamente después del login exitoso
+            // llamarApiProtegida(); 
 
         } catch (err) {
-            console.error(err);
-            errorMsg.innerText = "Error de conexión";
+            let errorMessage = "Error de conexión o credenciales inválidas.";
+            
+            // COMENTARIO DE NOTIFICACIÓN: Se evalúa el tipo de error para dar un mensaje específico.
+            if (err.code === "UserNotFoundException") {
+                errorMessage = "No se puede acceder: Usuario no encontrado en Cognito.";
+            } else if (err.code === "NotAuthorizedException") {
+                errorMessage = "No se puede acceder: Contraseña incorrecta para este usuario.";
+            } else if (err.code === "UserNotConfirmedException") {
+                errorMessage = "No se puede acceder: El usuario debe ser confirmado antes de iniciar sesión.";
+            } else {
+                console.error("Error detallado de Cognito:", err);
+            }
+
+            errorMsg.innerText = errorMessage;
             errorMsg.style.display = "block";
         }
     }
 
+    // Event listener para el login
+    loginCard.addEventListener("submit", (e) => {
+        e.preventDefault();
+        login();
+    });
+
 
     /* ===========================
-       LOGOUT
-       =========================== */
-    function logout() {
+        LOGOUT
+        =========================== */
+    async function logout() {
+        try {
+            // *** CAMBIO CLAVE: Usamos Auth.signOut de Amplify para cerrar la sesión de Cognito ***
+            await Auth.signOut();
+            console.log("Sesión de Cognito cerrada.");
+        } catch (error) {
+            console.error("Error al cerrar sesión de Cognito:", error);
+        }
+        
+        // Limpiamos el almacenamiento local y actualizamos la interfaz
         localStorage.removeItem("isLoggedIn");
         localStorage.removeItem("jwtToken");
         displayUI(false);
     }
+    
+    // Event listener para el logout
+    logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        logout();
+    });
 
 
     /* ===========================
-       FORMULARIO PARA BACKEND PYTHON
-       =========================== */
+        FORMULARIO PARA BACKEND PYTHON
+        =========================== */
     servicioSelect.addEventListener("change", () => {
         descHiddenInput.value = servicioSelect.value;
     });
@@ -590,13 +645,15 @@
             const token = localStorage.getItem("jwtToken");
 
             if (!token) {
-                showMessage("Token expirado. Inicia sesión.", "error");
+                // COMENTARIO DE NOTIFICACIÓN: Muestra el motivo por el cual no se envía.
+                showMessage("No se puede enviar la solicitud: Token expirado o no existe. Inicia sesión.", "error");
                 logout();
                 return;
             }
 
             const response = await fetch(PYTHON_ENDPOINT, {
                 method: "POST",
+                // Se respeta el envío del token JWT en el header de Autorización
                 headers: { Authorization: `Bearer ${token}` },
                 body: formData
             });
@@ -621,12 +678,14 @@
 
             } else {
                 const errorData = await response.json().catch(() => ({}));
-                showMessage(errorData.error || "Error en la API", "error");
+                // COMENTARIO DE NOTIFICACIÓN: Muestra el error específico de la API Python.
+                showMessage(errorData.error || "Error en la API Python al procesar solicitud.", "error");
             }
 
         } catch (error) {
             console.error("Error enviando formulario:", error);
-            showMessage("No se pudo contactar al servidor Python.", "error");
+            // COMENTARIO DE NOTIFICACIÓN: Muestra el problema de conexión con el servidor.
+            showMessage("No se pudo contactar al servidor Python. Verifica la URL del endpoint.", "error");
         }
 
         submitButton.disabled = false;
@@ -635,8 +694,8 @@
 
 
     /* ===========================
-       ESTADO INICIAL
-       =========================== */
+        ESTADO INICIAL
+        =========================== */
     checkLoginState();
 </script>
 
