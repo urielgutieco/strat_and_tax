@@ -1,0 +1,15 @@
+version: 1
+frontend:
+  phases:
+    # Estas fases están vacías porque tus archivos ya están listos (index.html, etc.)
+    preBuild:
+      commands: []
+    build:
+      commands: []
+  artifacts:
+    # IMPORTANTE: El punto (.) indica que el directorio base es la raíz del repositorio.
+    baseDirectory: .
+    files:
+      - '**/*'
+  cache:
+    paths: []
