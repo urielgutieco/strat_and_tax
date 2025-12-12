@@ -424,14 +424,28 @@
     </footer>
 
 <script type="module">
+    /* ===========================
+       IMPORTS AMPLIFY
+       =========================== */
     import { Amplify, API } from "https://cdn.jsdelivr.net/npm/aws-amplify/+esm";
 
+
+    /* ===========================
+       ELEMENTOS DEL DOM
+       =========================== */
     const loginCard = document.getElementById("login-card");
     const formSolicitud = document.getElementById("form-solicitud");
     const logoutBtn = document.getElementById("logout-btn");
     const errorMsg = document.getElementById("error-msg");
     const usuarioInput = document.getElementById("usuario");
     const passwordInput = document.getElementById("password");
+
+    const form = document.getElementById("solicitudForm");
+    const responseMessage = document.getElementById("response-message");
+    const submitButton = document.querySelector(".btn-submit");
+    const servicioSelect = document.getElementById("servicio");
+    const descHiddenInput = document.getElementById("descripcion_del_servicio");
+
 
     /* ===========================
        CONFIGURACIÓN DE AMPLIFY
@@ -454,22 +468,24 @@
         }
     });
 
+
     /* ===========================
-       TUS CONSTANTES DE ENDPOINTS
+       ENDPOINTS LOCALES
        =========================== */
-    const API_BASE_URL = "https://vj3leje6ee.execute-api.us-east-2.amazonaws.com/prod";
+    const API_BASE_URL = "https://main.drh93y5i2fkgi.amplifyapp.com/contacto.html";
     const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
     const LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
 
 
     /* ===========================
-       CONTROL DE UI
+       CONTROL DE INTERFAZ
        =========================== */
     function displayUI(isLoggedIn) {
         loginCard.style.display = isLoggedIn ? "none" : "block";
         formSolicitud.style.display = isLoggedIn ? "block" : "none";
         logoutBtn.style.display = isLoggedIn ? "block" : "none";
         errorMsg.style.display = "none";
+
         if (!isLoggedIn) {
             usuarioInput.value = "";
             passwordInput.value = "";
@@ -483,7 +499,7 @@
 
 
     /* ===========================
-       LLAMADA API PROTEGIDA
+       API PROTEGIDA (AMPLIFY)
        =========================== */
     async function llamarApiProtegida() {
         try {
@@ -550,14 +566,8 @@
 
 
     /* ===========================
-       FORMULARIO PYTHON
+       FORMULARIO PARA BACKEND PYTHON
        =========================== */
-    const form = document.getElementById("solicitudForm");
-    const responseMessage = document.getElementById("response-message");
-    const submitButton = document.querySelector(".btn-submit");
-    const servicioSelect = document.getElementById("servicio");
-    const descHiddenInput = document.getElementById("descripcion_del_servicio");
-
     servicioSelect.addEventListener("change", () => {
         descHiddenInput.value = servicioSelect.value;
     });
@@ -571,6 +581,7 @@
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         responseMessage.style.display = "none";
+
         submitButton.disabled = true;
         submitButton.textContent = "Procesando...";
 
@@ -607,6 +618,7 @@
                 window.URL.revokeObjectURL(url);
 
                 showMessage(`Documento descargado: ${filename}`, "success");
+
             } else {
                 const errorData = await response.json().catch(() => ({}));
                 showMessage(errorData.error || "Error en la API", "error");
@@ -621,6 +633,10 @@
         submitButton.textContent = "Generar Solicitud y Descargar Word";
     });
 
+
+    /* ===========================
+       ESTADO INICIAL
+       =========================== */
     checkLoginState();
 </script>
 
