@@ -14,7 +14,7 @@
 "canonicalName": "Merchant",
 "description": "Programmatically manage your Merchant Center Accounts.",
 "discoveryVersion": "v1",
-"documentationLink": "https://developers.devsite.corp.google.com/merchant/api",
+"documentationLink": "https://developers.google.com/merchant/api",
 "fullyEncodeReservedExpansion": true,
 "icons": {
 "x16": "http://www.google.com/images/icons/product/search-16.gif",
@@ -356,7 +356,7 @@
 }
 }
 },
-"revision": "20241022",
+"revision": "20250716",
 "rootUrl": "https://merchantapi.googleapis.com/",
 "schemas": {
 "CustomAttribute": {
@@ -427,12 +427,8 @@
 "description": "A review for a merchant. For more information, see [Introduction to Merchant Review Feeds](https://developers.google.com/merchant-review-feeds)",
 "id": "MerchantReview",
 "properties": {
-"attributes": {
-"$ref": "MerchantReviewAttributes",
-"description": "Optional. A list of merchant review attributes."
-},
 "customAttributes": {
-"description": "Required. A list of custom (merchant-provided) attributes. It can also be used for submitting any attribute of the data specification in its generic form (for example, `{ \"name\": \"size type\", \"value\": \"regular\" }`). This is useful for submitting attributes not explicitly exposed by the API, such as experimental attributes. Maximum allowed number of characters for each custom attribute is 10240 (represents sum of characters for name and value). Maximum 2500 custom attributes can be set per product, with total size of 102.4kB. Underscores in custom attribute names are replaced by spaces upon insertion.",
+"description": "Optional. A list of custom (merchant-provided) attributes. It can also be used for submitting any attribute of the data specification in its generic form (for example, `{ \"name\": \"size type\", \"value\": \"regular\" }`). This is useful for submitting attributes not explicitly exposed by the API, such as experimental attributes. Maximum allowed number of characters for each custom attribute is 10240 (represents sum of characters for name and value). Maximum 2500 custom attributes can be set per product, with total size of 102.4kB. Underscores in custom attribute names are replaced by spaces upon insertion.",
 "items": {
 "$ref": "CustomAttribute"
 },
@@ -442,6 +438,10 @@
 "description": "Output only. The primary data source of the merchant review.",
 "readOnly": true,
 "type": "string"
+},
+"merchantReviewAttributes": {
+"$ref": "MerchantReviewAttributes",
+"description": "Optional. A list of merchant review attributes."
 },
 "merchantReviewId": {
 "description": "Required. The user provided merchant review ID to uniquely identify the merchant review.",
@@ -523,7 +523,7 @@
 "type": "string"
 },
 "reviewLanguage": {
-"description": "Required. The language of the review defined by BCP-47 language code.",
+"description": "Optional. The language of the review defined by BCP-47 language code.",
 "type": "string"
 },
 "reviewTime": {
@@ -565,16 +565,20 @@
 "FREE_LISTINGS",
 "FREE_LOCAL_LISTINGS",
 "FREE_LOCAL_VEHICLE_LISTINGS",
+"YOUTUBE_AFFILIATE",
 "YOUTUBE_SHOPPING",
 "CLOUD_RETAIL",
 "LOCAL_CLOUD_RETAIL",
 "PRODUCT_REVIEWS",
-"MERCHANT_REVIEWS"
+"MERCHANT_REVIEWS",
+"YOUTUBE_CHECKOUT"
 ],
 "enumDeprecated": [
 false,
 false,
 true,
+false,
+false,
 false,
 false,
 false,
@@ -603,11 +607,13 @@ false
 "[Free product listings](https://support.google.com/merchants/answer/9199328).",
 "[Free local product listings](https://support.google.com/merchants/answer/9825611).",
 "[Free local vehicle listings](https://support.google.com/merchants/answer/11544533).",
+"[Youtube Affiliate](https://support.google.com/youtube/answer/13376398).",
 "[YouTube Shopping](https://support.google.com/merchants/answer/13478370).",
 "[Cloud retail](https://cloud.google.com/solutions/retail).",
 "[Local cloud retail](https://cloud.google.com/solutions/retail).",
 "[Product Reviews](https://support.google.com/merchants/answer/14620732).",
-"[Merchant Reviews](https://developers.google.com/merchant-review-feeds)."
+"[Merchant Reviews](https://developers.google.com/merchant-review-feeds).",
+"YouTube Checkout ."
 ],
 "readOnly": true,
 "type": "string"
@@ -659,16 +665,20 @@ false
 "FREE_LISTINGS",
 "FREE_LOCAL_LISTINGS",
 "FREE_LOCAL_VEHICLE_LISTINGS",
+"YOUTUBE_AFFILIATE",
 "YOUTUBE_SHOPPING",
 "CLOUD_RETAIL",
 "LOCAL_CLOUD_RETAIL",
 "PRODUCT_REVIEWS",
-"MERCHANT_REVIEWS"
+"MERCHANT_REVIEWS",
+"YOUTUBE_CHECKOUT"
 ],
 "enumDeprecated": [
 false,
 false,
 true,
+false,
+false,
 false,
 false,
 false,
@@ -697,11 +707,13 @@ false
 "[Free product listings](https://support.google.com/merchants/answer/9199328).",
 "[Free local product listings](https://support.google.com/merchants/answer/9825611).",
 "[Free local vehicle listings](https://support.google.com/merchants/answer/11544533).",
+"[Youtube Affiliate](https://support.google.com/youtube/answer/13376398).",
 "[YouTube Shopping](https://support.google.com/merchants/answer/13478370).",
 "[Cloud retail](https://cloud.google.com/solutions/retail).",
 "[Local cloud retail](https://cloud.google.com/solutions/retail).",
 "[Product Reviews](https://support.google.com/merchants/answer/14620732).",
-"[Merchant Reviews](https://developers.google.com/merchant-review-feeds)."
+"[Merchant Reviews](https://developers.google.com/merchant-review-feeds).",
+"YouTube Checkout ."
 ],
 "readOnly": true,
 "type": "string"
@@ -769,19 +781,19 @@ false
 "id": "ProductChange",
 "properties": {
 "newValue": {
-"description": "The new value of the changed resource or attribute.",
+"description": "The new value of the changed resource or attribute. If empty, it means that the product was deleted. Will have one of these values : (`approved`, `pending`, `disapproved`, ``)",
 "type": "string"
 },
 "oldValue": {
-"description": "The old value of the changed resource or attribute.",
+"description": "The old value of the changed resource or attribute. If empty, it means that the product was created. Will have one of these values : (`approved`, `pending`, `disapproved`, ``)",
 "type": "string"
 },
 "regionCode": {
-"description": "Countries that have the change (if applicable)",
+"description": "Countries that have the change (if applicable). Represented in the ISO 3166 format.",
 "type": "string"
 },
 "reportingContext": {
-"description": "Reporting contexts that have the change (if applicable)",
+"description": "Reporting contexts that have the change (if applicable). Currently this field supports only (`SHOPPING_ADS`, `LOCAL_INVENTORY_ADS`, `YOUTUBE_SHOPPING`, `YOUTUBE_CHECKOUT`, `YOUTUBE_AFFILIATE`) from the enum value [ReportingContextEnum](/merchant/api/reference/rest/Shared.Types/ReportingContextEnum)",
 "enum": [
 "REPORTING_CONTEXT_ENUM_UNSPECIFIED",
 "SHOPPING_ADS",
@@ -795,16 +807,20 @@ false
 "FREE_LISTINGS",
 "FREE_LOCAL_LISTINGS",
 "FREE_LOCAL_VEHICLE_LISTINGS",
+"YOUTUBE_AFFILIATE",
 "YOUTUBE_SHOPPING",
 "CLOUD_RETAIL",
 "LOCAL_CLOUD_RETAIL",
 "PRODUCT_REVIEWS",
-"MERCHANT_REVIEWS"
+"MERCHANT_REVIEWS",
+"YOUTUBE_CHECKOUT"
 ],
 "enumDeprecated": [
 false,
 false,
 true,
+false,
+false,
 false,
 false,
 false,
@@ -833,11 +849,13 @@ false
 "[Free product listings](https://support.google.com/merchants/answer/9199328).",
 "[Free local product listings](https://support.google.com/merchants/answer/9825611).",
 "[Free local vehicle listings](https://support.google.com/merchants/answer/11544533).",
+"[Youtube Affiliate](https://support.google.com/youtube/answer/13376398).",
 "[YouTube Shopping](https://support.google.com/merchants/answer/13478370).",
 "[Cloud retail](https://cloud.google.com/solutions/retail).",
 "[Local cloud retail](https://cloud.google.com/solutions/retail).",
 "[Product Reviews](https://support.google.com/merchants/answer/14620732).",
-"[Merchant Reviews](https://developers.google.com/merchant-review-feeds)."
+"[Merchant Reviews](https://developers.google.com/merchant-review-feeds).",
+"YouTube Checkout ."
 ],
 "type": "string"
 }
@@ -848,10 +866,6 @@ false
 "description": "A review for a product. For more information, see [Introduction to Product Review Feeds](https://developers.google.com/product-review-feeds)",
 "id": "ProductReview",
 "properties": {
-"attributes": {
-"$ref": "ProductReviewAttributes",
-"description": "Optional. A list of product review attributes."
-},
 "customAttributes": {
 "description": "Optional. A list of custom (merchant-provided) attributes.",
 "items": {
@@ -867,6 +881,10 @@ false
 "name": {
 "description": "Identifier. The name of the product review. Format: `\"{productreview.name=accounts/{account}/productReviews/{productReview}}\"`",
 "type": "string"
+},
+"productReviewAttributes": {
+"$ref": "ProductReviewAttributes",
+"description": "Optional. A list of product review attributes."
 },
 "productReviewId": {
 "description": "Required. The permanent, unique identifier for the product review in the publisher\u2019s system.",
@@ -924,7 +942,7 @@ false
 "type": "array"
 },
 "content": {
-"description": "Required. The content of the review.",
+"description": "Optional. The content of the review. If empty, the content might still get populated from pros and cons.",
 "type": "string"
 },
 "gtins": {
@@ -934,8 +952,16 @@ false
 },
 "type": "array"
 },
+"isIncentivizedReview": {
+"description": "Optional. Indicates whether the review is incentivized.",
+"type": "boolean"
+},
 "isSpam": {
 "description": "Optional. Indicates whether the review is marked as spam in the publisher's system.",
+"type": "boolean"
+},
+"isVerifiedPurchase": {
+"description": "Optional. Indicates whether the reviewer's purchase is verified.",
 "type": "boolean"
 },
 "maxRating": {
@@ -1066,16 +1092,20 @@ false
 "FREE_LISTINGS",
 "FREE_LOCAL_LISTINGS",
 "FREE_LOCAL_VEHICLE_LISTINGS",
+"YOUTUBE_AFFILIATE",
 "YOUTUBE_SHOPPING",
 "CLOUD_RETAIL",
 "LOCAL_CLOUD_RETAIL",
 "PRODUCT_REVIEWS",
-"MERCHANT_REVIEWS"
+"MERCHANT_REVIEWS",
+"YOUTUBE_CHECKOUT"
 ],
 "enumDeprecated": [
 false,
 false,
 true,
+false,
+false,
 false,
 false,
 false,
@@ -1104,11 +1134,13 @@ false
 "[Free product listings](https://support.google.com/merchants/answer/9199328).",
 "[Free local product listings](https://support.google.com/merchants/answer/9825611).",
 "[Free local vehicle listings](https://support.google.com/merchants/answer/11544533).",
+"[Youtube Affiliate](https://support.google.com/youtube/answer/13376398).",
 "[YouTube Shopping](https://support.google.com/merchants/answer/13478370).",
 "[Cloud retail](https://cloud.google.com/solutions/retail).",
 "[Local cloud retail](https://cloud.google.com/solutions/retail).",
 "[Product Reviews](https://support.google.com/merchants/answer/14620732).",
-"[Merchant Reviews](https://developers.google.com/merchant-review-feeds)."
+"[Merchant Reviews](https://developers.google.com/merchant-review-feeds).",
+"YouTube Checkout ."
 ],
 "readOnly": true,
 "type": "string"
@@ -1160,16 +1192,20 @@ false
 "FREE_LISTINGS",
 "FREE_LOCAL_LISTINGS",
 "FREE_LOCAL_VEHICLE_LISTINGS",
+"YOUTUBE_AFFILIATE",
 "YOUTUBE_SHOPPING",
 "CLOUD_RETAIL",
 "LOCAL_CLOUD_RETAIL",
 "PRODUCT_REVIEWS",
-"MERCHANT_REVIEWS"
+"MERCHANT_REVIEWS",
+"YOUTUBE_CHECKOUT"
 ],
 "enumDeprecated": [
 false,
 false,
 true,
+false,
+false,
 false,
 false,
 false,
@@ -1198,11 +1234,13 @@ false
 "[Free product listings](https://support.google.com/merchants/answer/9199328).",
 "[Free local product listings](https://support.google.com/merchants/answer/9825611).",
 "[Free local vehicle listings](https://support.google.com/merchants/answer/11544533).",
+"[Youtube Affiliate](https://support.google.com/youtube/answer/13376398).",
 "[YouTube Shopping](https://support.google.com/merchants/answer/13478370).",
 "[Cloud retail](https://cloud.google.com/solutions/retail).",
 "[Local cloud retail](https://cloud.google.com/solutions/retail).",
 "[Product Reviews](https://support.google.com/merchants/answer/14620732).",
-"[Merchant Reviews](https://developers.google.com/merchant-review-feeds)."
+"[Merchant Reviews](https://developers.google.com/merchant-review-feeds).",
+"YouTube Checkout ."
 ],
 "readOnly": true,
 "type": "string"
@@ -1292,8 +1330,13 @@ false
 },
 "type": "array"
 },
+"eventTime": {
+"description": "The time at which the event was generated. If you want to order the notification messages you receive you should rely on this field not on the order of receiving the notifications.",
+"format": "google-datetime",
+"type": "string"
+},
 "expirationTime": {
-"description": "The product expiration time.",
+"description": "Optional. The product expiration time. This field will not be set if the notification is sent for a product deletion event.",
 "format": "google-datetime",
 "type": "string"
 },
@@ -1302,7 +1345,7 @@ false
 "type": "string"
 },
 "resource": {
-"description": "The product name. Format: `{product.name=accounts/{account}/products/{product}}`",
+"description": "The product name. Format: `accounts/{account}/products/{product}`",
 "type": "string"
 },
 "resourceId": {

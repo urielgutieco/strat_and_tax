@@ -143,6 +143,12 @@
 "name"
 ],
 "parameters": {
+"extraLocationTypes": {
+"description": "Optional. Do not use this field. It is unsupported and is ignored unless explicitly documented otherwise. This is primarily for internal usage.",
+"location": "query",
+"repeated": true,
+"type": "string"
+},
 "filter": {
 "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
 "location": "query",
@@ -387,7 +393,7 @@
 "operations": {
 "methods": {
 "cancel": {
-"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 "httpMethod": "POST",
 "id": "contactcenteraiplatform.projects.locations.operations.cancel",
@@ -495,6 +501,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v1alpha1/{+name}/operations",
@@ -512,7 +523,7 @@
 }
 }
 },
-"revision": "20241009",
+"revision": "20251022",
 "rootUrl": "https://contactcenteraiplatform.googleapis.com/",
 "schemas": {
 "AdminUser": {
@@ -555,12 +566,16 @@
 "type": "object"
 },
 "ContactCenter": {
-"description": "Message describing ContactCenter object Next ID: 24",
+"description": "Message describing ContactCenter object",
 "id": "ContactCenter",
 "properties": {
 "adminUser": {
 "$ref": "AdminUser",
 "description": "Optional. Info about the first admin user, such as given name and family name."
+},
+"advancedReportingEnabled": {
+"description": "Optional. Whether the advanced reporting feature is enabled.",
+"type": "boolean"
 },
 "ccaipManagedUsers": {
 "description": "Optional. Whether to enable users to be created in the CCAIP-instance concurrently to having users in Cloud identity",
@@ -587,6 +602,10 @@
 "early": {
 "$ref": "Early",
 "description": "Optional. Early release channel."
+},
+"featureConfig": {
+"$ref": "FeatureConfig",
+"description": "Optional. Feature configuration to populate the feature flags."
 },
 "instanceConfig": {
 "$ref": "InstanceConfig",
@@ -622,6 +641,11 @@
 },
 "readOnly": true,
 "type": "array"
+},
+"releaseVersion": {
+"description": "Output only. UJET release version, unique for each new release.",
+"readOnly": true,
+"type": "string"
 },
 "samlParams": {
 "$ref": "SAMLParams",
@@ -728,6 +752,16 @@
 "properties": {},
 "type": "object"
 },
+"FeatureConfig": {
+"id": "FeatureConfig",
+"properties": {
+"agentDesktopEnabled": {
+"description": "Optional. If true - enables the agent desktop feature. Default is false.",
+"type": "boolean"
+}
+},
+"type": "object"
+},
 "GoogleCloudCommonOperationMetadata": {
 "description": "Represents the metadata of the long-running operation.",
 "id": "GoogleCloudCommonOperationMetadata",
@@ -738,7 +772,7 @@
 "type": "string"
 },
 "cancelRequested": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have been cancelled successfully have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have been cancelled successfully have google.longrunning.Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -786,13 +820,16 @@
 "STANDARD_XLARGE",
 "STANDARD_2XLARGE",
 "STANDARD_3XLARGE",
-"DEV_XSMALL",
 "MULTIREGION_SMALL",
 "MULTIREGION_MEDIUM",
 "MULTIREGION_LARGE",
 "MULTIREGION_XLARGE",
 "MULTIREGION_2XLARGE",
-"MULTIREGION_3XLARGE"
+"MULTIREGION_3XLARGE",
+"DEV_SMALL",
+"SANDBOX_SMALL",
+"TRIAL_SMALL",
+"TIME_LIMITED_TRIAL_SMALL"
 ],
 "enumDescriptions": [
 "The default value. This value is used if the state is omitted.",
@@ -802,13 +839,16 @@
 "Instance Size STANDARD_XLARGE.",
 "Instance Size STANDARD_2XLARGE.",
 "Instance Size STANDARD_3XLARGE.",
-"Instance Size DEV_EXTRA_SMALL.",
 "Instance Size MULTIREGION_SMALL",
 "Instance Size MULTIREGION_MEDIUM",
 "Instance Size MULTIREGION_LARGE",
 "Instance Size MULTIREGION_XLARGE",
 "Instance Size MULTIREGION_2XLARGE.",
-"Instance Size MULTIREGION_3XLARGE."
+"Instance Size MULTIREGION_3XLARGE.",
+"Instance Size DEV_SMALL",
+"Instance Size SANDBOX_SMALL",
+"Instance Size TRIAL_SMALL",
+"Instance Size TIME_LIMITED_TRIAL_SMALL"
 ],
 "type": "string"
 }
@@ -870,6 +910,13 @@
 "description": "A list of operations that matches the specified filter in the request.",
 "items": {
 "$ref": "Operation"
+},
+"type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
 },
 "type": "array"
 }
@@ -1070,13 +1117,16 @@
 "STANDARD_XLARGE",
 "STANDARD_2XLARGE",
 "STANDARD_3XLARGE",
-"DEV_XSMALL",
 "MULTIREGION_SMALL",
 "MULTIREGION_MEDIUM",
 "MULTIREGION_LARGE",
 "MULTIREGION_XLARGE",
 "MULTIREGION_2XLARGE",
-"MULTIREGION_3XLARGE"
+"MULTIREGION_3XLARGE",
+"DEV_SMALL",
+"SANDBOX_SMALL",
+"TRIAL_SMALL",
+"TIME_LIMITED_TRIAL_SMALL"
 ],
 "enumDescriptions": [
 "The default value. This value is used if the state is omitted.",
@@ -1086,13 +1136,16 @@
 "Instance Size STANDARD_XLARGE.",
 "Instance Size STANDARD_2XLARGE.",
 "Instance Size STANDARD_3XLARGE.",
-"Instance Size DEV_EXTRA_SMALL.",
 "Instance Size MULTIREGION_SMALL",
 "Instance Size MULTIREGION_MEDIUM",
 "Instance Size MULTIREGION_LARGE",
 "Instance Size MULTIREGION_XLARGE",
 "Instance Size MULTIREGION_2XLARGE.",
-"Instance Size MULTIREGION_3XLARGE."
+"Instance Size MULTIREGION_3XLARGE.",
+"Instance Size DEV_SMALL",
+"Instance Size SANDBOX_SMALL",
+"Instance Size TRIAL_SMALL",
+"Instance Size TIME_LIMITED_TRIAL_SMALL"
 ],
 "type": "string"
 }

@@ -2,6 +2,9 @@
 "auth": {
 "oauth2": {
 "scopes": {
+"https://www.googleapis.com/auth/bigquery": {
+"description": "View and manage your data in Google BigQuery and see the email address for your Google Account"
+},
 "https://www.googleapis.com/auth/cloud-platform": {
 "description": "See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account."
 }
@@ -130,6 +133,7 @@
 "$ref": "Location"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -155,6 +159,7 @@
 "$ref": "Config"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -167,6 +172,12 @@
 "name"
 ],
 "parameters": {
+"extraLocationTypes": {
+"description": "Optional. Unless explicitly documented otherwise, don't use this unsupported field which is primarily intended for internal usage.",
+"location": "query",
+"repeated": true,
+"type": "string"
+},
 "filter": {
 "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
 "location": "query",
@@ -196,11 +207,12 @@
 "$ref": "ListLocationsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "updateConfig": {
-"description": "Update default config for a given project and location.",
+"description": "Update default config for a given project and location. **Note:** *This method does not fully implement [AIP/134](https://google.aip.dev/134). The wildcard entry (\\*) is treated as a bad request, and when the `field_mask` is omitted, the request is treated as a full update on all modifiable fields.*",
 "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/config",
 "httpMethod": "PATCH",
 "id": "dataform.projects.locations.updateConfig",
@@ -230,18 +242,19 @@
 "$ref": "Config"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
 },
 "resources": {
-"collections": {
+"folders": {
 "methods": {
 "getIamPolicy": {
 "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/collections/{collectionsId}:getIamPolicy",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/folders/{foldersId}:getIamPolicy",
 "httpMethod": "GET",
-"id": "dataform.projects.locations.collections.getIamPolicy",
+"id": "dataform.projects.locations.folders.getIamPolicy",
 "parameterOrder": [
 "resource"
 ],
@@ -255,7 +268,7 @@
 "resource": {
 "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
 "location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/collections/[^/]+$",
+"pattern": "^projects/[^/]+/locations/[^/]+/folders/[^/]+$",
 "required": true,
 "type": "string"
 }
@@ -265,14 +278,15 @@
 "$ref": "Policy"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "setIamPolicy": {
 "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/collections/{collectionsId}:setIamPolicy",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/folders/{foldersId}:setIamPolicy",
 "httpMethod": "POST",
-"id": "dataform.projects.locations.collections.setIamPolicy",
+"id": "dataform.projects.locations.folders.setIamPolicy",
 "parameterOrder": [
 "resource"
 ],
@@ -280,7 +294,7 @@
 "resource": {
 "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
 "location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/collections/[^/]+$",
+"pattern": "^projects/[^/]+/locations/[^/]+/folders/[^/]+$",
 "required": true,
 "type": "string"
 }
@@ -293,14 +307,15 @@
 "$ref": "Policy"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "testIamPermissions": {
 "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/collections/{collectionsId}:testIamPermissions",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/folders/{foldersId}:testIamPermissions",
 "httpMethod": "POST",
-"id": "dataform.projects.locations.collections.testIamPermissions",
+"id": "dataform.projects.locations.folders.testIamPermissions",
 "parameterOrder": [
 "resource"
 ],
@@ -308,7 +323,7 @@
 "resource": {
 "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
 "location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/collections/[^/]+$",
+"pattern": "^projects/[^/]+/locations/[^/]+/folders/[^/]+$",
 "required": true,
 "type": "string"
 }
@@ -321,6 +336,139 @@
 "$ref": "TestIamPermissionsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+}
+}
+},
+"operations": {
+"methods": {
+"cancel": {
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
+"httpMethod": "POST",
+"id": "dataform.projects.locations.operations.cancel",
+"parameterOrder": [
+"name"
+],
+"parameters": {
+"name": {
+"description": "The name of the operation resource to be cancelled.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/operations/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1beta1/{+name}:cancel",
+"request": {
+"$ref": "CancelOperationRequest"
+},
+"response": {
+"$ref": "Empty"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
+"delete": {
+"description": "Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}",
+"httpMethod": "DELETE",
+"id": "dataform.projects.locations.operations.delete",
+"parameterOrder": [
+"name"
+],
+"parameters": {
+"name": {
+"description": "The name of the operation resource to be deleted.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/operations/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1beta1/{+name}",
+"response": {
+"$ref": "Empty"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
+"get": {
+"description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}",
+"httpMethod": "GET",
+"id": "dataform.projects.locations.operations.get",
+"parameterOrder": [
+"name"
+],
+"parameters": {
+"name": {
+"description": "The name of the operation resource.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/operations/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1beta1/{+name}",
+"response": {
+"$ref": "Operation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
+"list": {
+"description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/operations",
+"httpMethod": "GET",
+"id": "dataform.projects.locations.operations.list",
+"parameterOrder": [
+"name"
+],
+"parameters": {
+"filter": {
+"description": "The standard list filter.",
+"location": "query",
+"type": "string"
+},
+"name": {
+"description": "The name of the operation's parent resource.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+$",
+"required": true,
+"type": "string"
+},
+"pageSize": {
+"description": "The standard list page size.",
+"format": "int32",
+"location": "query",
+"type": "integer"
+},
+"pageToken": {
+"description": "The standard list page token.",
+"location": "query",
+"type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
+}
+},
+"path": "v1beta1/{+name}/operations",
+"response": {
+"$ref": "ListOperationsResponse"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
@@ -353,6 +501,7 @@
 "$ref": "CommitRepositoryChangesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -378,6 +527,7 @@
 "$ref": "ComputeRepositoryAccessTokenStatusResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -411,6 +561,7 @@
 "$ref": "Repository"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -424,7 +575,7 @@
 ],
 "parameters": {
 "force": {
-"description": "If set to true, any child resources of this repository will also be deleted. (Otherwise, the request will only succeed if the repository has no child resources.)",
+"description": "Optional. If set to true, child resources of this repository (compilation results and workflow invocations) will also be deleted. Otherwise, the request will only succeed if the repository has no child resources. **Note:** *This flag doesn't support deletion of workspaces, release configs or workflow configs. If any of such resources exists in the repository, the request will fail.*.",
 "location": "query",
 "type": "boolean"
 },
@@ -441,6 +592,7 @@
 "$ref": "Empty"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -477,6 +629,7 @@
 "$ref": "FetchRepositoryHistoryResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -502,6 +655,7 @@
 "$ref": "FetchRemoteBranchesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -527,6 +681,7 @@
 "$ref": "Repository"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -558,11 +713,12 @@
 "$ref": "Policy"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "list": {
-"description": "Lists Repositories in a given project and location.",
+"description": "Lists Repositories in a given project and location. **Note:** *This method can return repositories not shown in the [Dataform UI](https://console.cloud.google.com/bigquery/dataform)*.",
 "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories",
 "httpMethod": "GET",
 "id": "dataform.projects.locations.repositories.list",
@@ -604,11 +760,12 @@
 "$ref": "ListRepositoriesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "patch": {
-"description": "Updates a single Repository.",
+"description": "Updates a single Repository. **Note:** *This method does not fully implement [AIP/134](https://google.aip.dev/134). The wildcard entry (\\*) is treated as a bad request, and when the `field_mask` is omitted, the request is treated as a full update on all modifiable fields.*",
 "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}",
 "httpMethod": "PATCH",
 "id": "dataform.projects.locations.repositories.patch",
@@ -638,6 +795,7 @@
 "$ref": "Repository"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -684,6 +842,7 @@
 "$ref": "QueryRepositoryDirectoryContentsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -719,6 +878,7 @@
 "$ref": "ReadRepositoryFileResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -747,6 +907,7 @@
 "$ref": "Policy"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -775,139 +936,12 @@
 "$ref": "TestIamPermissionsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
 },
 "resources": {
-"commentThreads": {
-"methods": {
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/commentThreads/{commentThreadsId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "dataform.projects.locations.repositories.commentThreads.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/repositories/[^/]+/commentThreads/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1beta1/{+resource}:getIamPolicy",
-"response": {
-"$ref": "Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/commentThreads/{commentThreadsId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "dataform.projects.locations.repositories.commentThreads.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/repositories/[^/]+/commentThreads/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1beta1/{+resource}:setIamPolicy",
-"request": {
-"$ref": "SetIamPolicyRequest"
-},
-"response": {
-"$ref": "Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-},
-"resources": {
-"comments": {
-"methods": {
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/commentThreads/{commentThreadsId}/comments/{commentsId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "dataform.projects.locations.repositories.commentThreads.comments.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/repositories/[^/]+/commentThreads/[^/]+/comments/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1beta1/{+resource}:getIamPolicy",
-"response": {
-"$ref": "Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/commentThreads/{commentThreadsId}/comments/{commentsId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "dataform.projects.locations.repositories.commentThreads.comments.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/repositories/[^/]+/commentThreads/[^/]+/comments/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1beta1/{+resource}:setIamPolicy",
-"request": {
-"$ref": "SetIamPolicyRequest"
-},
-"response": {
-"$ref": "Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
-}
-}
-},
 "compilationResults": {
 "methods": {
 "create": {
@@ -935,6 +969,7 @@
 "$ref": "CompilationResult"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -960,6 +995,7 @@
 "$ref": "CompilationResult"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1006,6 +1042,7 @@
 "$ref": "ListCompilationResultsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1047,6 +1084,7 @@
 "$ref": "QueryCompilationResultActionsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
@@ -1084,6 +1122,7 @@
 "$ref": "ReleaseConfig"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1109,6 +1148,7 @@
 "$ref": "Empty"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1134,6 +1174,7 @@
 "$ref": "ReleaseConfig"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1170,11 +1211,12 @@
 "$ref": "ListReleaseConfigsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "patch": {
-"description": "Updates a single ReleaseConfig.",
+"description": "Updates a single ReleaseConfig. **Note:** *This method does not fully implement [AIP/134](https://google.aip.dev/134). The wildcard entry (\\*) is treated as a bad request, and when the `field_mask` is omitted, the request is treated as a full update on all modifiable fields.*",
 "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/releaseConfigs/{releaseConfigsId}",
 "httpMethod": "PATCH",
 "id": "dataform.projects.locations.repositories.releaseConfigs.patch",
@@ -1204,6 +1246,7 @@
 "$ref": "ReleaseConfig"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
@@ -1241,6 +1284,7 @@
 "$ref": "WorkflowConfig"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1266,6 +1310,7 @@
 "$ref": "Empty"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1291,6 +1336,7 @@
 "$ref": "WorkflowConfig"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1327,11 +1373,12 @@
 "$ref": "ListWorkflowConfigsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
 "patch": {
-"description": "Updates a single WorkflowConfig.",
+"description": "Updates a single WorkflowConfig. **Note:** *This method does not fully implement [AIP/134](https://google.aip.dev/134). The wildcard entry (\\*) is treated as a bad request, and when the `field_mask` is omitted, the request is treated as a full update on all modifiable fields.*",
 "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workflowConfigs/{workflowConfigsId}",
 "httpMethod": "PATCH",
 "id": "dataform.projects.locations.repositories.workflowConfigs.patch",
@@ -1361,6 +1408,7 @@
 "$ref": "WorkflowConfig"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
@@ -1390,9 +1438,10 @@
 "$ref": "CancelWorkflowInvocationRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "CancelWorkflowInvocationResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1421,6 +1470,7 @@
 "$ref": "WorkflowInvocation"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1446,6 +1496,7 @@
 "$ref": "Empty"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1471,6 +1522,7 @@
 "$ref": "WorkflowInvocation"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1517,6 +1569,7 @@
 "$ref": "ListWorkflowInvocationsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1553,6 +1606,7 @@
 "$ref": "QueryWorkflowInvocationActionsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
@@ -1582,9 +1636,10 @@
 "$ref": "CommitWorkspaceChangesRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "CommitWorkspaceChangesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1618,6 +1673,7 @@
 "$ref": "Workspace"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1643,6 +1699,7 @@
 "$ref": "Empty"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1673,6 +1730,7 @@
 "$ref": "FetchFileDiffResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1698,6 +1756,7 @@
 "$ref": "FetchFileGitStatusesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1728,6 +1787,7 @@
 "$ref": "FetchGitAheadBehindResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1753,6 +1813,7 @@
 "$ref": "Workspace"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1784,6 +1845,7 @@
 "$ref": "Policy"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1812,6 +1874,7 @@
 "$ref": "InstallNpmPackagesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1858,6 +1921,7 @@
 "$ref": "ListWorkspacesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1886,6 +1950,7 @@
 "$ref": "MakeDirectoryResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1914,6 +1979,7 @@
 "$ref": "MoveDirectoryResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1942,6 +2008,7 @@
 "$ref": "MoveFileResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1967,9 +2034,10 @@
 "$ref": "PullGitCommitsRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "PullGitCommitsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -1995,9 +2063,10 @@
 "$ref": "PushGitCommitsRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "PushGitCommitsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2039,6 +2108,7 @@
 "$ref": "QueryDirectoryContentsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2074,6 +2144,7 @@
 "$ref": "ReadFileResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2099,9 +2170,10 @@
 "$ref": "RemoveDirectoryRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "RemoveDirectoryResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2127,9 +2199,10 @@
 "$ref": "RemoveFileRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "RemoveFileResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2155,9 +2228,10 @@
 "$ref": "ResetWorkspaceChangesRequest"
 },
 "response": {
-"$ref": "Empty"
+"$ref": "ResetWorkspaceChangesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2199,6 +2273,7 @@
 "$ref": "SearchFilesResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2227,6 +2302,7 @@
 "$ref": "Policy"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2255,6 +2331,7 @@
 "$ref": "TestIamPermissionsResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
@@ -2283,6 +2360,103 @@
 "$ref": "WriteFileResponse"
 },
 "scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+}
+}
+}
+}
+},
+"teamFolders": {
+"methods": {
+"getIamPolicy": {
+"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/teamFolders/{teamFoldersId}:getIamPolicy",
+"httpMethod": "GET",
+"id": "dataform.projects.locations.teamFolders.getIamPolicy",
+"parameterOrder": [
+"resource"
+],
+"parameters": {
+"options.requestedPolicyVersion": {
+"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
+"format": "int32",
+"location": "query",
+"type": "integer"
+},
+"resource": {
+"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/teamFolders/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1beta1/{+resource}:getIamPolicy",
+"response": {
+"$ref": "Policy"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
+"setIamPolicy": {
+"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/teamFolders/{teamFoldersId}:setIamPolicy",
+"httpMethod": "POST",
+"id": "dataform.projects.locations.teamFolders.setIamPolicy",
+"parameterOrder": [
+"resource"
+],
+"parameters": {
+"resource": {
+"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/teamFolders/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1beta1/{+resource}:setIamPolicy",
+"request": {
+"$ref": "SetIamPolicyRequest"
+},
+"response": {
+"$ref": "Policy"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
+"testIamPermissions": {
+"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+"flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/teamFolders/{teamFoldersId}:testIamPermissions",
+"httpMethod": "POST",
+"id": "dataform.projects.locations.teamFolders.testIamPermissions",
+"parameterOrder": [
+"resource"
+],
+"parameters": {
+"resource": {
+"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/teamFolders/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1beta1/{+resource}:testIamPermissions",
+"request": {
+"$ref": "TestIamPermissionsRequest"
+},
+"response": {
+"$ref": "TestIamPermissionsResponse"
+},
+"scopes": [
+"https://www.googleapis.com/auth/bigquery",
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 }
@@ -2292,12 +2466,85 @@
 }
 }
 }
-}
-}
 },
-"revision": "20241020",
+"revision": "20251007",
 "rootUrl": "https://dataform.googleapis.com/",
 "schemas": {
+"ActionErrorTable": {
+"description": "Error table information, used to write error data into a BigQuery table.",
+"id": "ActionErrorTable",
+"properties": {
+"retentionDays": {
+"description": "Error table partition expiration in days. Only positive values are allowed.",
+"format": "int32",
+"type": "integer"
+},
+"target": {
+"$ref": "Target",
+"description": "Error Table target."
+}
+},
+"type": "object"
+},
+"ActionIncrementalLoadMode": {
+"description": "Load definition for incremental load modes",
+"id": "ActionIncrementalLoadMode",
+"properties": {
+"column": {
+"description": "Column name for incremental load modes",
+"type": "string"
+}
+},
+"type": "object"
+},
+"ActionLoadConfig": {
+"description": "Simplified load configuration for actions",
+"id": "ActionLoadConfig",
+"properties": {
+"append": {
+"$ref": "ActionSimpleLoadMode",
+"description": "Append into destination table"
+},
+"maximum": {
+"$ref": "ActionIncrementalLoadMode",
+"description": "Insert records where the value exceeds the previous maximum value for a column in the destination table"
+},
+"replace": {
+"$ref": "ActionSimpleLoadMode",
+"description": "Replace destination table"
+},
+"unique": {
+"$ref": "ActionIncrementalLoadMode",
+"description": "Insert records where the value of a column is not already present in the destination table"
+}
+},
+"type": "object"
+},
+"ActionSimpleLoadMode": {
+"description": "Simple load definition",
+"id": "ActionSimpleLoadMode",
+"properties": {},
+"type": "object"
+},
+"ActionSqlDefinition": {
+"description": "Definition of a SQL Data Preparation",
+"id": "ActionSqlDefinition",
+"properties": {
+"errorTable": {
+"$ref": "ActionErrorTable",
+"description": "Error table configuration,"
+},
+"loadConfig": {
+"$ref": "ActionLoadConfig",
+"description": "Load configuration."
+},
+"query": {
+"description": "The SQL query representing the data preparation steps. Formatted as a Pipe SQL query statement.",
+"type": "string"
+}
+},
+"type": "object"
+},
 "Assertion": {
 "description": "Represents an assertion upon a SQL query which is required return zero rows.",
 "id": "Assertion",
@@ -2374,9 +2621,21 @@
 },
 "type": "object"
 },
+"CancelOperationRequest": {
+"description": "The request message for Operations.CancelOperation.",
+"id": "CancelOperationRequest",
+"properties": {},
+"type": "object"
+},
 "CancelWorkflowInvocationRequest": {
 "description": "`CancelWorkflowInvocation` request message.",
 "id": "CancelWorkflowInvocationRequest",
+"properties": {},
+"type": "object"
+},
+"CancelWorkflowInvocationResponse": {
+"description": "`CancelWorkflowInvocation` response message.",
+"id": "CancelWorkflowInvocationResponse",
 "properties": {},
 "type": "object"
 },
@@ -2386,6 +2645,10 @@
 "properties": {
 "assertionSchema": {
 "description": "Optional. The default schema (BigQuery dataset ID) for assertions.",
+"type": "string"
+},
+"builtinAssertionNamePrefix": {
+"description": "Optional. The prefix to prepend to built-in assertion names.",
 "type": "string"
 },
 "databaseSuffix": {
@@ -2401,7 +2664,8 @@
 "type": "string"
 },
 "defaultNotebookRuntimeOptions": {
-"$ref": "NotebookRuntimeOptions"
+"$ref": "NotebookRuntimeOptions",
+"description": "Optional. The default notebook runtime options."
 },
 "defaultSchema": {
 "description": "Optional. The default schema (BigQuery dataset ID).",
@@ -2516,7 +2780,7 @@
 "additionalProperties": {
 "$ref": "FileOperation"
 },
-"description": "A map to the path of the file to the operation. The path is the full file path including filename, from repository root.",
+"description": "Optional. A map to the path of the file to the operation. The path is the full file path including filename, from repository root.",
 "type": "object"
 },
 "requiredHeadCommitSha": {
@@ -2557,6 +2821,12 @@
 "type": "array"
 }
 },
+"type": "object"
+},
+"CommitWorkspaceChangesResponse": {
+"description": "`CommitWorkspaceChanges` response message.",
+"id": "CommitWorkspaceChangesResponse",
+"properties": {},
 "type": "object"
 },
 "CompilationError": {
@@ -2622,6 +2892,11 @@
 "description": "Immutable. Git commit/tag/branch name at which the repository should be compiled. Must exist in the remote repository. Examples: - a commit SHA: `12ade345` - a tag: `tag1` - a branch name: `branch1`",
 "type": "string"
 },
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
+"type": "string"
+},
 "name": {
 "description": "Output only. The compilation result's name.",
 "readOnly": true,
@@ -2655,12 +2930,21 @@
 "$ref": "Target",
 "description": "The action's identifier if the project had been compiled without any overrides configured. Unique within the compilation result."
 },
+"dataPreparation": {
+"$ref": "DataPreparation",
+"description": "The data preparation executed by this action."
+},
 "declaration": {
 "$ref": "Declaration",
 "description": "The declaration declared by this action."
 },
 "filePath": {
 "description": "The full path including filename in which this action is located, relative to the workspace root.",
+"type": "string"
+},
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
 "type": "string"
 },
 "notebook": {
@@ -2713,6 +2997,11 @@
 "description": "Optional. The default KMS key that is used if no encryption key is provided when a repository is created.",
 "type": "string"
 },
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
+"type": "string"
+},
 "name": {
 "description": "Identifier. The config name.",
 "type": "string"
@@ -2725,7 +3014,66 @@
 "id": "DataEncryptionState",
 "properties": {
 "kmsKeyVersionName": {
-"description": "The KMS key version name with which data of a resource is encrypted.",
+"description": "Required. The KMS key version name with which data of a resource is encrypted.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"DataPreparation": {
+"description": "Defines a compiled Data Preparation entity",
+"id": "DataPreparation",
+"properties": {
+"contentsSql": {
+"$ref": "SqlDefinition",
+"description": "SQL definition for a Data Preparation. Contains a SQL query and additional context information."
+},
+"contentsYaml": {
+"description": "The data preparation definition, stored as a YAML string.",
+"type": "string"
+},
+"dependencyTargets": {
+"description": "A list of actions that this action depends on.",
+"items": {
+"$ref": "Target"
+},
+"type": "array"
+},
+"disabled": {
+"description": "Whether this action is disabled (i.e. should not be run).",
+"type": "boolean"
+},
+"tags": {
+"description": "Arbitrary, user-defined tags on this action.",
+"items": {
+"type": "string"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"DataPreparationAction": {
+"description": "Represents a workflow action that will run a Data Preparation.",
+"id": "DataPreparationAction",
+"properties": {
+"contentsSql": {
+"$ref": "ActionSqlDefinition",
+"description": "SQL definition for a Data Preparation. Contains a SQL query and additional context information."
+},
+"contentsYaml": {
+"description": "Output only. YAML representing the contents of the data preparation. Can be used to show the customer what the input was to their workflow.",
+"readOnly": true,
+"type": "string"
+},
+"generatedSql": {
+"description": "Output only. The generated BigQuery SQL script that will be executed. For reference only.",
+"readOnly": true,
+"type": "string"
+},
+"jobId": {
+"description": "Output only. The ID of the BigQuery job that executed the SQL in sql_script. Only set once the job has started to run.",
+"readOnly": true,
 "type": "string"
 }
 },
@@ -2778,6 +3126,22 @@
 "description": "A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance: service Foo { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }",
 "id": "Empty",
 "properties": {},
+"type": "object"
+},
+"ErrorTable": {
+"description": "Error table information, used to write error data into a BigQuery table.",
+"id": "ErrorTable",
+"properties": {
+"retentionDays": {
+"description": "Error table partition expiration in days. Only positive values are allowed.",
+"format": "int32",
+"type": "integer"
+},
+"target": {
+"$ref": "Target",
+"description": "Error Table target."
+}
+},
 "type": "object"
 },
 "Expr": {
@@ -2944,6 +3308,32 @@
 },
 "type": "object"
 },
+"IamPolicyOverrideView": {
+"description": "Contains metadata about the IAM policy override for a given Dataform resource. If is_active is true, this the policy encoded in iam_policy_name is the source of truth for this resource. Will be provided in internal ESV2 views for: Workspaces, Repositories, Folders, TeamFolders.",
+"id": "IamPolicyOverrideView",
+"properties": {
+"iamPolicyName": {
+"$ref": "PolicyName",
+"description": "The IAM policy name for the resource."
+},
+"isActive": {
+"description": "Whether the IAM policy encoded in this view is active.",
+"type": "boolean"
+}
+},
+"type": "object"
+},
+"IncrementalLoadMode": {
+"description": "Load definition for incremental load modes",
+"id": "IncrementalLoadMode",
+"properties": {
+"column": {
+"description": "Column name for incremental load modes",
+"type": "string"
+}
+},
+"type": "object"
+},
 "IncrementalTableConfig": {
 "description": "Contains settings for relations of type `INCREMENTAL_TABLE`.",
 "id": "IncrementalTableConfig",
@@ -3035,6 +3425,20 @@
 },
 "type": "array"
 },
+"queryPriority": {
+"description": "Optional. Specifies the priority for query execution in BigQuery. More information can be found at https://cloud.google.com/bigquery/docs/running-queries#queries.",
+"enum": [
+"QUERY_PRIORITY_UNSPECIFIED",
+"INTERACTIVE",
+"BATCH"
+],
+"enumDescriptions": [
+"Default value. This value is unused.",
+"Query will be executed in BigQuery with interactive priority. More information can be found at https://cloud.google.com/bigquery/docs/running-queries#queries.",
+"Query will be executed in BigQuery with batch priority. More information can be found at https://cloud.google.com/bigquery/docs/running-queries#batchqueries."
+],
+"type": "string"
+},
 "serviceAccount": {
 "description": "Optional. The service account to run workflow invocations under.",
 "type": "string"
@@ -3089,6 +3493,31 @@
 "nextPageToken": {
 "description": "The standard List next-page token.",
 "type": "string"
+}
+},
+"type": "object"
+},
+"ListOperationsResponse": {
+"description": "The response message for Operations.ListOperations.",
+"id": "ListOperationsResponse",
+"properties": {
+"nextPageToken": {
+"description": "The standard List next-page token.",
+"type": "string"
+},
+"operations": {
+"description": "A list of operations that matches the specified filter in the request.",
+"items": {
+"$ref": "Operation"
+},
+"type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
+},
+"type": "array"
 }
 },
 "type": "object"
@@ -3218,6 +3647,29 @@
 },
 "type": "object"
 },
+"LoadConfig": {
+"description": "Simplified load configuration for actions",
+"id": "LoadConfig",
+"properties": {
+"append": {
+"$ref": "SimpleLoadMode",
+"description": "Append into destination table"
+},
+"maximum": {
+"$ref": "IncrementalLoadMode",
+"description": "Insert records where the value exceeds the previous maximum value for a column in the destination table"
+},
+"replace": {
+"$ref": "SimpleLoadMode",
+"description": "Replace destination table"
+},
+"unique": {
+"$ref": "IncrementalLoadMode",
+"description": "Insert records where the value of a column is not already present in the destination table"
+}
+},
+"type": "object"
+},
 "Location": {
 "description": "A resource that represents a Google Cloud location.",
 "id": "Location",
@@ -3312,6 +3764,7 @@
 "type": "object"
 },
 "Notebook": {
+"description": "Represents a notebook.",
 "id": "Notebook",
 "properties": {
 "contents": {
@@ -3349,7 +3802,7 @@
 "type": "string"
 },
 "jobId": {
-"description": "Output only. The ID of the Vertex job that executed the notebook in contents and also the ID used for the outputs created in GCS buckets. Only set once the job has started to run.",
+"description": "Output only. The ID of the Vertex job that executed the notebook in contents and also the ID used for the outputs created in Google Cloud Storage buckets. Only set once the job has started to run.",
 "readOnly": true,
 "type": "string"
 }
@@ -3357,11 +3810,51 @@
 "type": "object"
 },
 "NotebookRuntimeOptions": {
+"description": "Configures various aspects of Dataform notebook runtime.",
 "id": "NotebookRuntimeOptions",
 "properties": {
-"gcsOutputBucket": {
-"description": "Optional. The GCS location to upload the result to. Format: `gs://bucket-name`.",
+"aiPlatformNotebookRuntimeTemplate": {
+"description": "Optional. The resource name of the [Colab runtime template] (https://cloud.google.com/colab/docs/runtimes), from which a runtime is created for notebook executions. If not specified, a runtime is created with Colab's default specifications.",
 "type": "string"
+},
+"gcsOutputBucket": {
+"description": "Optional. The Google Cloud Storage location to upload the result to. Format: `gs://bucket-name`.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"Operation": {
+"description": "This resource represents a long-running operation that is the result of a network API call.",
+"id": "Operation",
+"properties": {
+"done": {
+"description": "If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.",
+"type": "boolean"
+},
+"error": {
+"$ref": "Status",
+"description": "The error result of the operation in case of failure or cancellation."
+},
+"metadata": {
+"additionalProperties": {
+"description": "Properties of the object. Contains field @type with type URL.",
+"type": "any"
+},
+"description": "Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.",
+"type": "object"
+},
+"name": {
+"description": "The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.",
+"type": "string"
+},
+"response": {
+"additionalProperties": {
+"description": "Properties of the object. Contains field @type with type URL.",
+"type": "any"
+},
+"description": "The normal, successful response of the operation. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.",
+"type": "object"
 }
 },
 "type": "object"
@@ -3376,7 +3869,7 @@
 "type": "string"
 },
 "cancelRequested": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have been cancelled successfully have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have been cancelled successfully have google.longrunning.Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -3474,6 +3967,25 @@
 },
 "type": "object"
 },
+"PolicyName": {
+"description": "An internal name for an IAM policy, based on the resource to which the policy applies. Not to be confused with a resource's external full resource name. For more information on this distinction, see go/iam-full-resource-names.",
+"id": "PolicyName",
+"properties": {
+"id": {
+"description": "Identifies an instance of the type. ID format varies by type. The ID format is defined in the IAM .service file that defines the type, either in path_mapping or in a comment.",
+"type": "string"
+},
+"region": {
+"description": "For Cloud IAM: The location of the Policy. Must be empty or \"global\" for Policies owned by global IAM. Must name a region from prodspec/cloud-iam-cloudspec for Regional IAM Policies, see go/iam-faq#where-is-iam-currently-deployed. For Local IAM: This field should be set to \"local\".",
+"type": "string"
+},
+"type": {
+"description": "Resource type. Types are defined in IAM's .service files. Valid values for type might be 'storage_buckets', 'compute_instances', 'resourcemanager_customers', 'billing_accounts', etc.",
+"type": "string"
+}
+},
+"type": "object"
+},
 "PullGitCommitsRequest": {
 "description": "`PullGitCommits` request message.",
 "id": "PullGitCommitsRequest",
@@ -3489,6 +4001,12 @@
 },
 "type": "object"
 },
+"PullGitCommitsResponse": {
+"description": "`PullGitCommits` response message.",
+"id": "PullGitCommitsResponse",
+"properties": {},
+"type": "object"
+},
 "PushGitCommitsRequest": {
 "description": "`PushGitCommits` request message.",
 "id": "PushGitCommitsRequest",
@@ -3498,6 +4016,12 @@
 "type": "string"
 }
 },
+"type": "object"
+},
+"PushGitCommitsResponse": {
+"description": "`PushGitCommits` response message.",
+"id": "PushGitCommitsResponse",
+"properties": {},
 "type": "object"
 },
 "QueryCompilationResultActionsResponse": {
@@ -3737,6 +4261,11 @@
 "description": "Required. Git commit/tag/branch name at which the repository should be compiled. Must exist in the remote repository. Examples: - a commit SHA: `12ade345` - a tag: `tag1` - a branch name: `branch1`",
 "type": "string"
 },
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
+"type": "string"
+},
 "name": {
 "description": "Identifier. The release config's name.",
 "type": "string"
@@ -3771,6 +4300,12 @@
 },
 "type": "object"
 },
+"RemoveDirectoryResponse": {
+"description": "`RemoveDirectory` response message.",
+"id": "RemoveDirectoryResponse",
+"properties": {},
+"type": "object"
+},
 "RemoveFileRequest": {
 "description": "`RemoveFile` request message.",
 "id": "RemoveFileRequest",
@@ -3780,6 +4315,12 @@
 "type": "string"
 }
 },
+"type": "object"
+},
+"RemoveFileResponse": {
+"description": "`RemoveFile` response message.",
+"id": "RemoveFileResponse",
+"properties": {},
 "type": "object"
 },
 "Repository": {
@@ -3804,6 +4345,11 @@
 "gitRemoteSettings": {
 "$ref": "GitRemoteSettings",
 "description": "Optional. If set, configures this repository to be linked to a Git remote."
+},
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
+"type": "string"
 },
 "kmsKeyName": {
 "description": "Optional. The reference to a KMS encryption key. If provided, it will be used to encrypt user data in the repository and all child resources. It is not possible to add or update the encryption key after the repository is created. Example: `projects/{kms_project}/locations/{location}/keyRings/{key_location}/cryptoKeys/{key}`",
@@ -3857,6 +4403,12 @@
 },
 "type": "object"
 },
+"ResetWorkspaceChangesResponse": {
+"description": "`ResetWorkspaceChanges` response message.",
+"id": "ResetWorkspaceChangesResponse",
+"properties": {},
+"type": "object"
+},
 "ScheduledExecutionRecord": {
 "description": "A record of an attempt to create a workflow invocation for this workflow config.",
 "id": "ScheduledExecutionRecord",
@@ -3866,8 +4418,9 @@
 "description": "The error status encountered upon this attempt to create the workflow invocation, if the attempt was unsuccessful."
 },
 "executionTime": {
-"description": "The timestamp of this execution attempt.",
+"description": "Output only. The timestamp of this execution attempt.",
 "format": "google-datetime",
+"readOnly": true,
 "type": "string"
 },
 "workflowInvocation": {
@@ -3890,8 +4443,9 @@
 "description": "The error status encountered upon this attempt to create the compilation result, if the attempt was unsuccessful."
 },
 "releaseTime": {
-"description": "The timestamp of this release attempt.",
+"description": "Output only. The timestamp of this release attempt.",
 "format": "google-datetime",
+"readOnly": true,
 "type": "string"
 }
 },
@@ -3937,6 +4491,31 @@
 "policy": {
 "$ref": "Policy",
 "description": "REQUIRED: The complete policy to be applied to the `resource`. The size of the policy is limited to a few 10s of KB. An empty policy is a valid policy but certain Google Cloud services (such as Projects) might reject them."
+}
+},
+"type": "object"
+},
+"SimpleLoadMode": {
+"description": "Simple load definition",
+"id": "SimpleLoadMode",
+"properties": {},
+"type": "object"
+},
+"SqlDefinition": {
+"description": "Definition of a SQL Data Preparation",
+"id": "SqlDefinition",
+"properties": {
+"errorTable": {
+"$ref": "ErrorTable",
+"description": "Error table configuration,"
+},
+"load": {
+"$ref": "LoadConfig",
+"description": "Load configuration."
+},
+"query": {
+"description": "The SQL query representing the data preparation steps. Formatted as a Pipe SQL query statement.",
+"type": "string"
 }
 },
 "type": "object"
@@ -3988,15 +4567,15 @@
 "id": "Target",
 "properties": {
 "database": {
-"description": "The action's database (Google Cloud project ID) .",
+"description": "Optional. The action's database (Google Cloud project ID) .",
 "type": "string"
 },
 "name": {
-"description": "The action's name, within `database` and `schema`.",
+"description": "Optional. The action's name, within `database` and `schema`.",
 "type": "string"
 },
 "schema": {
-"description": "The action's schema (BigQuery dataset ID), within `database`.",
+"description": "Optional. The action's schema (BigQuery dataset ID), within `database`.",
 "type": "string"
 }
 },
@@ -4039,7 +4618,7 @@
 "type": "string"
 },
 "state": {
-"description": "Indicates the status of the file.",
+"description": "Output only. Indicates the status of the file.",
 "enum": [
 "STATE_UNSPECIFIED",
 "ADDED",
@@ -4054,6 +4633,7 @@
 "The file has been modified.",
 "The file contains merge conflicts."
 ],
+"readOnly": true,
 "type": "string"
 }
 },
@@ -4071,6 +4651,15 @@
 },
 "cronSchedule": {
 "description": "Optional. Optional schedule (in cron format) for automatic execution of this workflow config.",
+"type": "string"
+},
+"disabled": {
+"description": "Optional. Disables automatic creation of workflow invocations.",
+"type": "boolean"
+},
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
 "type": "string"
 },
 "invocationConfig": {
@@ -4118,6 +4707,11 @@
 "$ref": "DataEncryptionState",
 "description": "Output only. Only set if the repository has a KMS Key.",
 "readOnly": true
+},
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
+"type": "string"
 },
 "invocationConfig": {
 "$ref": "InvocationConfig",
@@ -4180,8 +4774,18 @@
 "description": "Output only. The action's identifier if the project had been compiled without any overrides configured. Unique within the compilation result.",
 "readOnly": true
 },
+"dataPreparationAction": {
+"$ref": "DataPreparationAction",
+"description": "Output only. The workflow action's data preparation action details.",
+"readOnly": true
+},
 "failureReason": {
 "description": "Output only. If and only if action's state is FAILED a failure reason is set.",
+"readOnly": true,
+"type": "string"
+},
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
 "readOnly": true,
 "type": "string"
 },
@@ -4240,6 +4844,11 @@
 "$ref": "DataEncryptionState",
 "description": "Output only. A data encryption state of a Git repository if this Workspace is protected by a KMS key.",
 "readOnly": true
+},
+"internalMetadata": {
+"description": "Output only. All the metadata information that is used internally to serve the resource. For example: timestamps, flags, status fields, etc. The format of this field is a JSON string.",
+"readOnly": true,
+"type": "string"
 },
 "name": {
 "description": "Identifier. The workspace's name.",

@@ -68,6 +68,11 @@
 },
 {
 "description": "Regional Endpoint",
+"endpointUrl": "https://datalineage.asia-southeast3.rep.googleapis.com/",
+"location": "asia-southeast3"
+},
+{
+"description": "Regional Endpoint",
 "endpointUrl": "https://datalineage.australia-southeast1.rep.googleapis.com/",
 "location": "australia-southeast1"
 },
@@ -93,6 +98,11 @@
 },
 {
 "description": "Regional Endpoint",
+"endpointUrl": "https://datalineage.europe-north3.rep.googleapis.com/",
+"location": "europe-north3"
+},
+{
+"description": "Regional Endpoint",
 "endpointUrl": "https://datalineage.europe-southwest1.rep.googleapis.com/",
 "location": "europe-southwest1"
 },
@@ -110,6 +120,11 @@
 "description": "Regional Endpoint",
 "endpointUrl": "https://datalineage.europe-west12.rep.googleapis.com/",
 "location": "europe-west12"
+},
+{
+"description": "Regional Endpoint",
+"endpointUrl": "https://datalineage.europe-west15.rep.googleapis.com/",
+"location": "europe-west15"
 },
 {
 "description": "Regional Endpoint",
@@ -240,6 +255,16 @@
 "description": "Regional Endpoint",
 "endpointUrl": "https://datalineage.us-west8.rep.googleapis.com/",
 "location": "us-west8"
+},
+{
+"description": "Regional Endpoint",
+"endpointUrl": "https://datalineage.us.rep.googleapis.com/",
+"location": "us"
+},
+{
+"description": "Regional Endpoint",
+"endpointUrl": "https://datalineage.eu.rep.googleapis.com/",
+"location": "eu"
 }
 ],
 "fullyEncodeReservedExpansion": true,
@@ -381,7 +406,7 @@
 "type": "string"
 },
 "requestId": {
-"description": "A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
+"description": "Optional. A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
 "location": "query",
 "type": "string"
 }
@@ -434,7 +459,7 @@
 "operations": {
 "methods": {
 "cancel": {
-"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 "httpMethod": "POST",
 "id": "datalineage.projects.locations.operations.cancel",
@@ -542,6 +567,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v1/{+name}/operations",
@@ -573,7 +603,7 @@
 "type": "string"
 },
 "requestId": {
-"description": "A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
+"description": "Optional. A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
 "location": "query",
 "type": "string"
 }
@@ -701,6 +731,11 @@
 "required": true,
 "type": "string"
 },
+"requestId": {
+"description": "Optional. A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
+"location": "query",
+"type": "string"
+},
 "updateMask": {
 "description": "The list of fields to update. Currently not used. The whole message is updated.",
 "format": "google-fieldmask",
@@ -740,7 +775,7 @@
 "type": "string"
 },
 "requestId": {
-"description": "A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
+"description": "Optional. A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
 "location": "query",
 "type": "string"
 }
@@ -907,7 +942,7 @@
 "type": "string"
 },
 "requestId": {
-"description": "A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
+"description": "Optional. A unique identifier for this request. Restricted to 36 ASCII characters. A random UUID is recommended. This request is idempotent only if a `request_id` is provided.",
 "location": "query",
 "type": "string"
 }
@@ -1025,7 +1060,7 @@
 }
 }
 },
-"revision": "20241018",
+"revision": "20251003",
 "rootUrl": "https://datalineage.googleapis.com/",
 "schemas": {
 "GoogleCloudDatacatalogLineageV1BatchSearchLinkProcessesRequest": {
@@ -1074,7 +1109,7 @@
 "id": "GoogleCloudDatacatalogLineageV1EntityReference",
 "properties": {
 "fullyQualifiedName": {
-"description": "Required. [Fully Qualified Name (FQN)](https://cloud.google.com/data-catalog/docs/fully-qualified-names) of the entity.",
+"description": "Required. [Fully Qualified Name (FQN)](https://cloud.google.com/dataplex/docs/fully-qualified-names) of the entity.",
 "type": "string"
 }
 },
@@ -1275,11 +1310,11 @@
 "id": "GoogleCloudDatacatalogLineageV1Origin",
 "properties": {
 "name": {
-"description": "If the source_type isn't CUSTOM, the value of this field should be a GCP resource name of the system, which reports lineage. The project and location parts of the resource name must match the project and location of the lineage resource being created. Examples: - `{source_type: COMPOSER, name: \"projects/foo/locations/us/environments/bar\"}` - `{source_type: BIGQUERY, name: \"projects/foo/locations/eu\"}` - `{source_type: CUSTOM, name: \"myCustomIntegration\"}`",
+"description": "If the source_type isn't CUSTOM, the value of this field should be a Google Cloud resource name of the system, which reports lineage. The project and location parts of the resource name must match the project and location of the lineage resource being created. Examples: - `{source_type: COMPOSER, name: \"projects/foo/locations/us/environments/bar\"}` - `{source_type: BIGQUERY, name: \"projects/foo/locations/eu\"}` - `{source_type: CUSTOM, name: \"myCustomIntegration\"}`",
 "type": "string"
 },
 "sourceType": {
-"description": "Type of the source. Use of a source_type other than `CUSTOM` for process creation or updating is highly discouraged. It may cause additional billing costs and be restricted in the future without notice.",
+"description": "Type of the source. Use of a source_type other than `CUSTOM` for process creation or updating is highly discouraged. It might be restricted in the future without notice. There will be increase in cost if you use any of the source types other than `CUSTOM`.",
 "enum": [
 "SOURCE_TYPE_UNSPECIFIED",
 "CUSTOM",
@@ -1502,6 +1537,13 @@
 "description": "A list of operations that matches the specified filter in the request.",
 "items": {
 "$ref": "GoogleLongrunningOperation"
+},
+"type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
 },
 "type": "array"
 }

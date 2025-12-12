@@ -143,6 +143,12 @@
 "name"
 ],
 "parameters": {
+"extraLocationTypes": {
+"description": "Optional. Do not use this field. It is unsupported and is ignored unless explicitly documented otherwise. This is primarily for internal usage.",
+"location": "query",
+"repeated": true,
+"type": "string"
+},
 "filter": {
 "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
 "location": "query",
@@ -371,7 +377,7 @@
 "operations": {
 "methods": {
 "cancel": {
-"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "flatPath": "v2/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 "httpMethod": "POST",
 "id": "gkehub.projects.locations.operations.cancel",
@@ -454,6 +460,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v2/{+name}/operations",
@@ -471,7 +482,7 @@
 }
 }
 },
-"revision": "20241017",
+"revision": "20251026",
 "rootUrl": "https://gkehub.googleapis.com/",
 "schemas": {
 "AppDevExperienceState": {
@@ -700,35 +711,41 @@
 "description": "Configuration for Config Sync",
 "id": "ConfigManagementConfigSync",
 "properties": {
-"allowVerticalScale": {
-"deprecated": true,
-"description": "Set to true to allow the vertical scaling. Defaults to false which disallows vertical scaling. This field is deprecated.",
-"type": "boolean"
+"deploymentOverrides": {
+"description": "Optional. Configuration for deployment overrides.",
+"items": {
+"$ref": "ConfigManagementDeploymentOverride"
+},
+"type": "array"
 },
 "enabled": {
-"description": "Enables the installation of ConfigSync. If set to true, ConfigSync resources will be created and the other ConfigSync fields will be applied if exist. If set to false, all other ConfigSync fields will be ignored, ConfigSync resources will be deleted. If omitted, ConfigSync resources will be managed depends on the presence of the git or oci field.",
+"description": "Optional. Enables the installation of ConfigSync. If set to true, ConfigSync resources will be created and the other ConfigSync fields will be applied if exist. If set to false, all other ConfigSync fields will be ignored, ConfigSync resources will be deleted. If omitted, ConfigSync resources will be managed depends on the presence of the git or oci field.",
 "type": "boolean"
 },
 "git": {
 "$ref": "ConfigManagementGitConfig",
-"description": "Git repo configuration for the cluster."
+"description": "Optional. Git repo configuration for the cluster."
 },
 "metricsGcpServiceAccountEmail": {
 "deprecated": true,
-"description": "The Email of the Google Cloud Service Account (GSA) used for exporting Config Sync metrics to Cloud Monitoring and Cloud Monarch when Workload Identity is enabled. The GSA should have the Monitoring Metric Writer (roles/monitoring.metricWriter) IAM role. The Kubernetes ServiceAccount `default` in the namespace `config-management-monitoring` should be bound to the GSA. Deprecated: If Workload Identity Federation for GKE is enabled, Google Cloud Service Account is no longer needed for exporting Config Sync metrics: https://cloud.google.com/kubernetes-engine/enterprise/config-sync/docs/how-to/monitor-config-sync-cloud-monitoring#custom-monitoring.",
+"description": "Optional. The Email of the Google Cloud Service Account (GSA) used for exporting Config Sync metrics to Cloud Monitoring and Cloud Monarch when Workload Identity is enabled. The GSA should have the Monitoring Metric Writer (roles/monitoring.metricWriter) IAM role. The Kubernetes ServiceAccount `default` in the namespace `config-management-monitoring` should be bound to the GSA. Deprecated: If Workload Identity Federation for GKE is enabled, Google Cloud Service Account is no longer needed for exporting Config Sync metrics: https://cloud.google.com/kubernetes-engine/enterprise/config-sync/docs/how-to/monitor-config-sync-cloud-monitoring#custom-monitoring.",
 "type": "string"
 },
 "oci": {
 "$ref": "ConfigManagementOciConfig",
-"description": "OCI repo configuration for the cluster."
+"description": "Optional. OCI repo configuration for the cluster."
 },
 "preventDrift": {
-"description": "Set to true to enable the Config Sync admission webhook to prevent drifts. If set to `false`, disables the Config Sync admission webhook and does not prevent drifts.",
+"description": "Optional. Set to true to enable the Config Sync admission webhook to prevent drifts. If set to `false`, disables the Config Sync admission webhook and does not prevent drifts.",
 "type": "boolean"
 },
 "sourceFormat": {
-"description": "Specifies whether the Config Sync Repo is in \"hierarchical\" or \"unstructured\" mode.",
+"description": "Optional. Specifies whether the Config Sync Repo is in \"hierarchical\" or \"unstructured\" mode.",
 "type": "string"
+},
+"stopSyncing": {
+"description": "Optional. Set to true to stop syncing configs for a single cluster. Default to false.",
+"type": "boolean"
 }
 },
 "type": "object"
@@ -918,7 +935,7 @@
 "id": "ConfigManagementConfigSyncState",
 "properties": {
 "clusterLevelStopSyncingState": {
-"description": "Whether syncing resources to the cluster is stopped at the cluster level.",
+"description": "Output only. Whether syncing resources to the cluster is stopped at the cluster level.",
 "enum": [
 "STOP_SYNCING_STATE_UNSPECIFIED",
 "NOT_STOPPED",
@@ -931,6 +948,7 @@
 "Some reconcilers stop syncing resources to the cluster, while others are still syncing.",
 "Syncing resources to the cluster is stopped at the cluster level."
 ],
+"readOnly": true,
 "type": "string"
 },
 "crCount": {
@@ -941,17 +959,19 @@
 },
 "deploymentState": {
 "$ref": "ConfigManagementConfigSyncDeploymentState",
-"description": "Information about the deployment of ConfigSync, including the version. of the various Pods deployed"
+"description": "Output only. Information about the deployment of ConfigSync, including the version. of the various Pods deployed",
+"readOnly": true
 },
 "errors": {
-"description": "Errors pertaining to the installation of Config Sync.",
+"description": "Output only. Errors pertaining to the installation of Config Sync.",
 "items": {
 "$ref": "ConfigManagementConfigSyncError"
 },
+"readOnly": true,
 "type": "array"
 },
 "reposyncCrd": {
-"description": "The state of the Reposync CRD",
+"description": "Output only. The state of the Reposync CRD",
 "enum": [
 "CRD_STATE_UNSPECIFIED",
 "NOT_INSTALLED",
@@ -966,10 +986,11 @@
 "CRD is terminating (i.e., it has been deleted and is cleaning up)",
 "CRD is installing"
 ],
+"readOnly": true,
 "type": "string"
 },
 "rootsyncCrd": {
-"description": "The state of the RootSync CRD",
+"description": "Output only. The state of the RootSync CRD",
 "enum": [
 "CRD_STATE_UNSPECIFIED",
 "NOT_INSTALLED",
@@ -984,10 +1005,11 @@
 "CRD is terminating (i.e., it has been deleted and is cleaning up)",
 "CRD is installing"
 ],
+"readOnly": true,
 "type": "string"
 },
 "state": {
-"description": "The state of CS This field summarizes the other fields in this message.",
+"description": "Output only. The state of CS This field summarizes the other fields in this message.",
 "enum": [
 "STATE_UNSPECIFIED",
 "CONFIG_SYNC_NOT_INSTALLED",
@@ -1002,15 +1024,18 @@
 "CS encounters errors.",
 "CS is installing or terminating."
 ],
+"readOnly": true,
 "type": "string"
 },
 "syncState": {
 "$ref": "ConfigManagementSyncState",
-"description": "The state of ConfigSync's process to sync configs to a cluster."
+"description": "Output only. The state of ConfigSync's process to sync configs to a cluster.",
+"readOnly": true
 },
 "version": {
 "$ref": "ConfigManagementConfigSyncVersion",
-"description": "The version of ConfigSync deployed."
+"description": "Output only. The version of ConfigSync deployed.",
+"readOnly": true
 }
 },
 "type": "object"
@@ -1053,6 +1078,55 @@
 },
 "syncer": {
 "description": "Version of the deployed syncer pod.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"ConfigManagementContainerOverride": {
+"description": "Configuration for a container override.",
+"id": "ConfigManagementContainerOverride",
+"properties": {
+"containerName": {
+"description": "Required. The name of the container.",
+"type": "string"
+},
+"cpuLimit": {
+"description": "Optional. The cpu limit of the container.",
+"type": "string"
+},
+"cpuRequest": {
+"description": "Optional. The cpu request of the container.",
+"type": "string"
+},
+"memoryLimit": {
+"description": "Optional. The memory limit of the container.",
+"type": "string"
+},
+"memoryRequest": {
+"description": "Optional. The memory request of the container.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"ConfigManagementDeploymentOverride": {
+"description": "Configuration for a deployment override.",
+"id": "ConfigManagementDeploymentOverride",
+"properties": {
+"containers": {
+"description": "Optional. The containers of the deployment resource to be overridden.",
+"items": {
+"$ref": "ConfigManagementContainerOverride"
+},
+"type": "array"
+},
+"deploymentName": {
+"description": "Required. The name of the deployment resource to be overridden.",
+"type": "string"
+},
+"deploymentNamespace": {
+"description": "Required. The namespace of the deployment resource to be overridden.",
 "type": "string"
 }
 },
@@ -1147,35 +1221,35 @@
 "id": "ConfigManagementGitConfig",
 "properties": {
 "gcpServiceAccountEmail": {
-"description": "The Google Cloud Service Account Email used for auth when secret_type is gcpServiceAccount.",
+"description": "Optional. The Google Cloud Service Account Email used for auth when secret_type is gcpServiceAccount.",
 "type": "string"
 },
 "httpsProxy": {
-"description": "URL for the HTTPS proxy to be used when communicating with the Git repo.",
+"description": "Optional. URL for the HTTPS proxy to be used when communicating with the Git repo.",
 "type": "string"
 },
 "policyDir": {
-"description": "The path within the Git repository that represents the top level of the repo to sync. Default: the root directory of the repository.",
+"description": "Optional. The path within the Git repository that represents the top level of the repo to sync. Default: the root directory of the repository.",
 "type": "string"
 },
 "secretType": {
-"description": "Type of secret configured for access to the Git repo. Must be one of ssh, cookiefile, gcenode, token, gcpserviceaccount or none. The validation of this is case-sensitive. Required.",
+"description": "Required. Type of secret configured for access to the Git repo. Must be one of ssh, cookiefile, gcenode, token, gcpserviceaccount, githubapp or none. The validation of this is case-sensitive.",
 "type": "string"
 },
 "syncBranch": {
-"description": "The branch of the repository to sync from. Default: master.",
+"description": "Optional. The branch of the repository to sync from. Default: master.",
 "type": "string"
 },
 "syncRepo": {
-"description": "The URL of the Git repository to use as the source of truth.",
+"description": "Required. The URL of the Git repository to use as the source of truth.",
 "type": "string"
 },
 "syncRev": {
-"description": "Git revision (tag or hash) to check out. Default HEAD.",
+"description": "Optional. Git revision (tag or hash) to check out. Default HEAD.",
 "type": "string"
 },
 "syncWaitSecs": {
-"description": "Period in seconds between consecutive syncs. Default: 15.",
+"description": "Optional. Period in seconds between consecutive syncs. Default: 15.",
 "format": "int64",
 "type": "string"
 }
@@ -1309,23 +1383,23 @@
 "id": "ConfigManagementOciConfig",
 "properties": {
 "gcpServiceAccountEmail": {
-"description": "The Google Cloud Service Account Email used for auth when secret_type is gcpServiceAccount.",
+"description": "Optional. The Google Cloud Service Account Email used for auth when secret_type is gcpServiceAccount.",
 "type": "string"
 },
 "policyDir": {
-"description": "The absolute path of the directory that contains the local resources. Default: the root directory of the image.",
+"description": "Optional. The absolute path of the directory that contains the local resources. Default: the root directory of the image.",
 "type": "string"
 },
 "secretType": {
-"description": "Type of secret configured for access to the Git repo.",
+"description": "Required. Type of secret configured for access to the OCI repo. Must be one of gcenode, gcpserviceaccount, k8sserviceaccount or none. The validation of this is case-sensitive.",
 "type": "string"
 },
 "syncRepo": {
-"description": "The OCI image repository URL for the package to sync from. e.g. `LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/PACKAGE_NAME`.",
+"description": "Required. The OCI image repository URL for the package to sync from. e.g. `LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/PACKAGE_NAME`.",
 "type": "string"
 },
 "syncWaitSecs": {
-"description": "Period in seconds between consecutive syncs. Default: 15.",
+"description": "Optional. Period in seconds between consecutive syncs. Default: 15.",
 "format": "int64",
 "type": "string"
 }
@@ -1504,22 +1578,23 @@
 "binauthz": {
 "$ref": "ConfigManagementBinauthzConfig",
 "deprecated": true,
-"description": "Binauthz conifguration for the cluster. Deprecated: This field will be ignored and should not be set."
+"description": "Optional. Binauthz conifguration for the cluster. Deprecated: This field will be ignored and should not be set."
 },
 "cluster": {
-"description": "The user-specified cluster name used by Config Sync cluster-name-selector annotation or ClusterSelector, for applying configs to only a subset of clusters. Omit this field if the cluster's fleet membership name is used by Config Sync cluster-name-selector annotation or ClusterSelector. Set this field if a name different from the cluster's fleet membership name is used by Config Sync cluster-name-selector annotation or ClusterSelector.",
+"description": "Optional. The user-specified cluster name used by Config Sync cluster-name-selector annotation or ClusterSelector, for applying configs to only a subset of clusters. Omit this field if the cluster's fleet membership name is used by Config Sync cluster-name-selector annotation or ClusterSelector. Set this field if a name different from the cluster's fleet membership name is used by Config Sync cluster-name-selector annotation or ClusterSelector.",
 "type": "string"
 },
 "configSync": {
 "$ref": "ConfigManagementConfigSync",
-"description": "Config Sync configuration for the cluster."
+"description": "Optional. Config Sync configuration for the cluster."
 },
 "hierarchyController": {
 "$ref": "ConfigManagementHierarchyControllerConfig",
-"description": "Hierarchy Controller configuration for the cluster. Deprecated: Configuring Hierarchy Controller through the configmanagement feature is no longer recommended. Use https://github.com/kubernetes-sigs/hierarchical-namespaces instead."
+"deprecated": true,
+"description": "Optional. Hierarchy Controller configuration for the cluster. Deprecated: Configuring Hierarchy Controller through the configmanagement feature is no longer recommended. Use https://github.com/kubernetes-sigs/hierarchical-namespaces instead."
 },
 "management": {
-"description": "Enables automatic Feature management.",
+"description": "Optional. Enables automatic Feature management.",
 "enum": [
 "MANAGEMENT_UNSPECIFIED",
 "MANAGEMENT_AUTOMATIC",
@@ -1534,10 +1609,11 @@
 },
 "policyController": {
 "$ref": "ConfigManagementPolicyController",
-"description": "Policy Controller configuration for the cluster. Deprecated: Configuring Policy Controller through the configmanagement feature is no longer recommended. Use the policycontroller feature instead."
+"deprecated": true,
+"description": "Optional. Policy Controller configuration for the cluster. Deprecated: Configuring Policy Controller through the configmanagement feature is no longer recommended. Use the policycontroller feature instead."
 },
 "version": {
-"description": "Version of ACM installed.",
+"description": "Optional. Version of ACM installed.",
 "type": "string"
 }
 },
@@ -1549,31 +1625,43 @@
 "properties": {
 "binauthzState": {
 "$ref": "ConfigManagementBinauthzState",
-"description": "Binauthz status."
+"description": "Output only. Binauthz status.",
+"readOnly": true
 },
 "clusterName": {
-"description": "This field is set to the `cluster_name` field of the Membership Spec if it is not empty. Otherwise, it is set to the cluster's fleet membership name.",
+"description": "Output only. This field is set to the `cluster_name` field of the Membership Spec if it is not empty. Otherwise, it is set to the cluster's fleet membership name.",
+"readOnly": true,
 "type": "string"
 },
 "configSyncState": {
 "$ref": "ConfigManagementConfigSyncState",
-"description": "Current sync status."
+"description": "Output only. Current sync status.",
+"readOnly": true
 },
 "hierarchyControllerState": {
 "$ref": "ConfigManagementHierarchyControllerState",
-"description": "Hierarchy Controller status."
+"description": "Output only. Hierarchy Controller status.",
+"readOnly": true
+},
+"kubernetesApiServerVersion": {
+"description": "Output only. The Kubernetes API server version of the cluster.",
+"readOnly": true,
+"type": "string"
 },
 "membershipSpec": {
 "$ref": "ConfigManagementSpec",
-"description": "Membership configuration in the cluster. This represents the actual state in the cluster, while the MembershipSpec in the FeatureSpec represents the intended state."
+"description": "Output only. Membership configuration in the cluster. This represents the actual state in the cluster, while the MembershipSpec in the FeatureSpec represents the intended state.",
+"readOnly": true
 },
 "operatorState": {
 "$ref": "ConfigManagementOperatorState",
-"description": "Current install status of ACM's Operator."
+"description": "Output only. Current install status of ACM's Operator.",
+"readOnly": true
 },
 "policyControllerState": {
 "$ref": "ConfigManagementPolicyControllerState",
-"description": "PolicyController status."
+"description": "Output only. PolicyController status.",
+"readOnly": true
 }
 },
 "type": "object"
@@ -1666,28 +1754,6 @@
 "properties": {},
 "type": "object"
 },
-"FeatureConfigRef": {
-"description": "Information of the FeatureConfig applied on the MembershipFeature.",
-"id": "FeatureConfigRef",
-"properties": {
-"config": {
-"description": "Input only. Resource name of FeatureConfig, in the format: `projects/{project}/locations/global/featureConfigs/{feature_config}`.",
-"type": "string"
-},
-"configUpdateTime": {
-"description": "Output only. When the FeatureConfig was last applied and copied to FeatureSpec.",
-"format": "google-datetime",
-"readOnly": true,
-"type": "string"
-},
-"uuid": {
-"description": "Output only. An id that uniquely identify a FeatureConfig object.",
-"readOnly": true,
-"type": "string"
-}
-},
-"type": "object"
-},
 "FeatureSpec": {
 "description": "FeatureSpec contains user input per-feature spec information.",
 "id": "FeatureSpec",
@@ -1711,6 +1777,10 @@
 "policycontroller": {
 "$ref": "PolicyControllerSpec",
 "description": "Policycontroller-specific FeatureSpec."
+},
+"rbacrolebindingactuation": {
+"$ref": "RBACRoleBindingActuationSpec",
+"description": "Rbacrolebindingactuation-specific FeatureSpec."
 },
 "servicemesh": {
 "$ref": "ServiceMeshSpec",
@@ -1750,6 +1820,10 @@
 "policycontroller": {
 "$ref": "PolicyControllerState",
 "description": "Policy Controller state"
+},
+"rbacrolebindingactuation": {
+"$ref": "RBACRoleBindingActuationState",
+"description": "RBAC Role Binding Actuation state"
 },
 "servicemesh": {
 "$ref": "ServiceMeshState",
@@ -2267,6 +2341,13 @@
 "$ref": "Operation"
 },
 "type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
+},
+"type": "array"
 }
 },
 "type": "object"
@@ -2321,10 +2402,6 @@
 "readOnly": true,
 "type": "string"
 },
-"featureConfigRef": {
-"$ref": "FeatureConfigRef",
-"description": "Reference information for a FeatureConfig applied on the MembershipFeature."
-},
 "labels": {
 "additionalProperties": {
 "type": "string"
@@ -2344,7 +2421,7 @@
 },
 "spec": {
 "$ref": "FeatureSpec",
-"description": "Spec of this membershipFeature."
+"description": "Optional. Spec of this membershipFeature."
 },
 "state": {
 "$ref": "FeatureState",
@@ -2842,6 +2919,58 @@
 },
 "type": "object"
 },
+"RBACRoleBindingActuationRBACRoleBindingState": {
+"description": "RBACRoleBindingState is the status of an RBACRoleBinding which exists on a membership.",
+"id": "RBACRoleBindingActuationRBACRoleBindingState",
+"properties": {
+"description": {
+"description": "The reason for the failure.",
+"type": "string"
+},
+"state": {
+"description": "Output only. The state of the RBACRoleBinding.",
+"enum": [
+"ROLE_BINDING_STATE_UNSPECIFIED",
+"OK",
+"CUSTOM_ROLE_MISSING_FROM_CLUSTER"
+],
+"enumDescriptions": [
+"Unspecified state.",
+"RBACRoleBinding is created properly on the cluster.",
+"The RBACRoleBinding was created on the cluster but the specified custom role does not exist on the cluster, hence the RBACRoleBinding has no effect."
+],
+"readOnly": true,
+"type": "string"
+},
+"updateTime": {
+"description": "The time the RBACRoleBinding status was last updated.",
+"format": "google-datetime",
+"type": "string"
+}
+},
+"type": "object"
+},
+"RBACRoleBindingActuationSpec": {
+"description": "**RBAC RoleBinding Actuation**: The membership-specific input for RBACRoleBindingActuation feature.",
+"id": "RBACRoleBindingActuationSpec",
+"properties": {},
+"type": "object"
+},
+"RBACRoleBindingActuationState": {
+"description": "**RBAC RoleBinding Actuation**: A membership-specific Feature state for the RBACRoleBindingActuation fleet feature.",
+"id": "RBACRoleBindingActuationState",
+"properties": {
+"rbacrolebindingStates": {
+"additionalProperties": {
+"$ref": "RBACRoleBindingActuationRBACRoleBindingState"
+},
+"description": "Output only. The state of RBACRoleBindings using custom roles that exist on the cluster, keyed by RBACRoleBinding resource name with format: projects/{project}/locations/{location}/scopes/{scope}/rbacrolebindings/{rbacrolebinding}.",
+"readOnly": true,
+"type": "object"
+}
+},
+"type": "object"
+},
 "ServiceMeshAnalysisMessage": {
 "description": "AnalysisMessage is a single message produced by an analyzer, and it used to communicate to the end user about the state of their Service Mesh configuration.",
 "id": "ServiceMeshAnalysisMessage",
@@ -2919,6 +3048,7 @@
 "CNI_INSTALLATION_FAILED",
 "CNI_POD_UNSCHEDULABLE",
 "CLUSTER_HAS_ZERO_NODES",
+"CANONICAL_SERVICE_ERROR",
 "UNSUPPORTED_MULTIPLE_CONTROL_PLANES",
 "VPCSC_GA_SUPPORTED",
 "DEPRECATED_SPEC_CONTROL_PLANE_MANAGEMENT",
@@ -2941,10 +3071,27 @@
 "QUOTA_EXCEEDED_HTTP_FILTERS",
 "QUOTA_EXCEEDED_TCP_FILTERS",
 "QUOTA_EXCEEDED_NETWORK_ENDPOINT_GROUPS",
+"LEGACY_MC_SECRETS",
+"WORKLOAD_IDENTITY_REQUIRED",
+"NON_STANDARD_BINARY_USAGE",
+"UNSUPPORTED_GATEWAY_CLASS",
+"MANAGED_CNI_NOT_ENABLED",
 "MODERNIZATION_SCHEDULED",
 "MODERNIZATION_IN_PROGRESS",
 "MODERNIZATION_COMPLETED",
-"MODERNIZATION_ABORTED"
+"MODERNIZATION_ABORTED",
+"MODERNIZATION_PREPARING",
+"MODERNIZATION_STALLED",
+"MODERNIZATION_PREPARED",
+"MODERNIZATION_MIGRATING_WORKLOADS",
+"MODERNIZATION_ROLLING_BACK_CLUSTER",
+"MODERNIZATION_WILL_BE_SCHEDULED",
+"MODERNIZATION_MANUAL",
+"MODERNIZATION_ELIGIBLE",
+"MODERNIZATION_MODERNIZING",
+"MODERNIZATION_MODERNIZED_SOAKING",
+"MODERNIZATION_FINALIZED",
+"MODERNIZATION_ROLLING_BACK_FLEET"
 ],
 "enumDescriptions": [
 "Default Unspecified code",
@@ -2956,6 +3103,7 @@
 "CNI installation failed error code",
 "CNI pod unschedulable error code",
 "Cluster has zero node code",
+"Failure to reconcile CanonicalServices",
 "Multiple control planes unsupported error code",
 "VPC-SC GA is supported for this control plane.",
 "User is using deprecated ControlPlaneManagement and they have not yet set Management.",
@@ -2978,10 +3126,27 @@
 "HTTPFilter quota exceeded error code.",
 "TCPFilter quota exceeded error code.",
 "NetworkEndpointGroup quota exceeded error code.",
+"Legacy istio secrets found for multicluster error code",
+"Workload identity required error code",
+"Non-standard binary usage error code",
+"Unsupported gateway class error code",
+"Managed CNI not enabled error code",
 "Modernization is scheduled for a cluster.",
 "Modernization is in progress for a cluster.",
 "Modernization is completed for a cluster.",
-"Modernization is aborted for a cluster."
+"Modernization is aborted for a cluster.",
+"Preparing cluster so that its workloads can be migrated.",
+"Modernization is stalled for a cluster.",
+"Cluster has been prepared for its workloads to be migrated.",
+"Migrating the cluster's workloads to the new implementation.",
+"Rollback is in progress for modernization of a cluster.",
+"Modernization will be scheduled for a fleet.",
+"Fleet is opted out from automated modernization.",
+"Fleet is eligible for modernization.",
+"Modernization of one or more clusters in a fleet is in progress.",
+"Modernization of all the fleet's clusters is complete. Soaking before finalizing the modernization.",
+"Modernization is finalized for all clusters in a fleet. Rollback is no longer allowed.",
+"Rollback is in progress for modernization of all clusters in a fleet."
 ],
 "type": "string"
 },
@@ -3050,7 +3215,8 @@
 "ACTIVE",
 "STALLED",
 "NEEDS_ATTENTION",
-"DEGRADED"
+"DEGRADED",
+"DEPROVISIONING"
 ],
 "enumDescriptions": [
 "Unspecified",
@@ -3060,7 +3226,8 @@
 "ACTIVE means that the component is ready for use.",
 "STALLED means that provisioning could not be done.",
 "NEEDS_ATTENTION means that the component is ready, but some user intervention is required. (For example that the user should migrate workloads to a new control plane revision.)",
-"DEGRADED means that the component is ready, but operating in a degraded state."
+"DEGRADED means that the component is ready, but operating in a degraded state.",
+"DEPROVISIONING means that deprovisioning is in progress."
 ],
 "type": "string"
 }
@@ -3088,7 +3255,8 @@
 "ACTIVE",
 "STALLED",
 "NEEDS_ATTENTION",
-"DEGRADED"
+"DEGRADED",
+"DEPROVISIONING"
 ],
 "enumDescriptions": [
 "Unspecified",
@@ -3098,7 +3266,8 @@
 "ACTIVE means that the component is ready for use.",
 "STALLED means that provisioning could not be done.",
 "NEEDS_ATTENTION means that the component is ready, but some user intervention is required. (For example that the user should migrate workloads to a new control plane revision.)",
-"DEGRADED means that the component is ready, but operating in a degraded state."
+"DEGRADED means that the component is ready, but operating in a degraded state.",
+"DEPROVISIONING means that deprovisioning is in progress."
 ],
 "type": "string"
 }
@@ -3160,12 +3329,14 @@
 "enum": [
 "MANAGEMENT_UNSPECIFIED",
 "MANAGEMENT_AUTOMATIC",
-"MANAGEMENT_MANUAL"
+"MANAGEMENT_MANUAL",
+"MANAGEMENT_NOT_INSTALLED"
 ],
 "enumDescriptions": [
-"Unspecified",
+"Unspecified.",
 "Google should manage my Service Mesh for the cluster.",
-"User will manually configure their service mesh components."
+"User will manually configure their service mesh components.",
+"Google should remove any managed Service Mesh components from this cluster and deprovision any resources."
 ],
 "type": "string"
 }

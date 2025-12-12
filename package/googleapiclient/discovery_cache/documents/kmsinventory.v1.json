@@ -242,7 +242,7 @@
 }
 }
 },
-"revision": "20240630",
+"revision": "20251012",
 "rootUrl": "https://kmsinventory.googleapis.com/",
 "schemas": {
 "GoogleCloudKmsInventoryV1ListCryptoKeysResponse": {
@@ -438,7 +438,8 @@
 "ASYMMETRIC_SIGN",
 "ASYMMETRIC_DECRYPT",
 "RAW_ENCRYPT_DECRYPT",
-"MAC"
+"MAC",
+"KEY_ENCAPSULATION"
 ],
 "enumDescriptions": [
 "Not specified.",
@@ -446,7 +447,8 @@
 "CryptoKeys with this purpose may be used with AsymmetricSign and GetPublicKey.",
 "CryptoKeys with this purpose may be used with AsymmetricDecrypt and GetPublicKey.",
 "CryptoKeys with this purpose may be used with RawEncrypt and RawDecrypt. This purpose is meant to be used for interoperable symmetric encryption and does not support automatic CryptoKey rotation.",
-"CryptoKeys with this purpose may be used with MacSign."
+"CryptoKeys with this purpose may be used with MacSign.",
+"CryptoKeys with this purpose may be used with GetPublicKey and Decapsulate."
 ],
 "type": "string"
 },
@@ -504,7 +506,15 @@
 "HMAC_SHA384",
 "HMAC_SHA512",
 "HMAC_SHA224",
-"EXTERNAL_SYMMETRIC_ENCRYPTION"
+"EXTERNAL_SYMMETRIC_ENCRYPTION",
+"ML_KEM_768",
+"ML_KEM_1024",
+"KEM_XWING",
+"PQ_SIGN_ML_DSA_44",
+"PQ_SIGN_ML_DSA_65",
+"PQ_SIGN_ML_DSA_87",
+"PQ_SIGN_SLH_DSA_SHA2_128S",
+"PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256"
 ],
 "enumDescriptions": [
 "Not specified.",
@@ -542,7 +552,15 @@
 "HMAC-SHA384 signing with a 384 bit key.",
 "HMAC-SHA512 signing with a 512 bit key.",
 "HMAC-SHA224 signing with a 224 bit key.",
-"Algorithm representing symmetric encryption by an external key manager."
+"Algorithm representing symmetric encryption by an external key manager.",
+"ML-KEM-768 (FIPS 203)",
+"ML-KEM-1024 (FIPS 203)",
+"X-Wing hybrid KEM combining ML-KEM-768 with X25519 following datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/.",
+"The post-quantum Module-Lattice-Based Digital Signature Algorithm, at security level 1. Randomized version.",
+"The post-quantum Module-Lattice-Based Digital Signature Algorithm, at security level 3. Randomized version.",
+"The post-quantum Module-Lattice-Based Digital Signature Algorithm, at security level 5. Randomized version.",
+"The post-quantum stateless hash-based digital signature algorithm, at security level 1. Randomized version.",
+"The post-quantum stateless hash-based digital signature algorithm, at security level 1. Randomized pre-hash version supporting SHA256 digests."
 ],
 "readOnly": true,
 "type": "string"
@@ -655,7 +673,7 @@
 "This version is still being generated. It may not be used, enabled, disabled, or destroyed yet. Cloud KMS will automatically mark this version ENABLED as soon as the version is ready.",
 "This version may be used for cryptographic operations.",
 "This version may not be used, but the key material is still available, and the version can be placed back into the ENABLED state.",
-"This version is destroyed, and the key material is no longer stored. This version may only become ENABLED again if this version is reimport_eligible and the original key material is reimported with a call to KeyManagementService.ImportCryptoKeyVersion.",
+"The key material of this version is destroyed and no longer stored. This version may only become ENABLED again if this version is reimport_eligible and the original key material is reimported with a call to KeyManagementService.ImportCryptoKeyVersion.",
 "This version is scheduled for destruction, and will be destroyed soon. Call RestoreCryptoKeyVersion to put it back into the DISABLED state.",
 "This version is still being imported. It may not be used, enabled, disabled, or destroyed yet. Cloud KMS will automatically mark this version ENABLED as soon as the version is ready.",
 "This version was not imported successfully. It may not be used, enabled, disabled, or destroyed. The submitted key material has been discarded. Additional details can be found in CryptoKeyVersion.import_failure_reason.",
@@ -710,7 +728,15 @@
 "HMAC_SHA384",
 "HMAC_SHA512",
 "HMAC_SHA224",
-"EXTERNAL_SYMMETRIC_ENCRYPTION"
+"EXTERNAL_SYMMETRIC_ENCRYPTION",
+"ML_KEM_768",
+"ML_KEM_1024",
+"KEM_XWING",
+"PQ_SIGN_ML_DSA_44",
+"PQ_SIGN_ML_DSA_65",
+"PQ_SIGN_ML_DSA_87",
+"PQ_SIGN_SLH_DSA_SHA2_128S",
+"PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256"
 ],
 "enumDescriptions": [
 "Not specified.",
@@ -748,7 +774,15 @@
 "HMAC-SHA384 signing with a 384 bit key.",
 "HMAC-SHA512 signing with a 512 bit key.",
 "HMAC-SHA224 signing with a 224 bit key.",
-"Algorithm representing symmetric encryption by an external key manager."
+"Algorithm representing symmetric encryption by an external key manager.",
+"ML-KEM-768 (FIPS 203)",
+"ML-KEM-1024 (FIPS 203)",
+"X-Wing hybrid KEM combining ML-KEM-768 with X25519 following datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/.",
+"The post-quantum Module-Lattice-Based Digital Signature Algorithm, at security level 1. Randomized version.",
+"The post-quantum Module-Lattice-Based Digital Signature Algorithm, at security level 3. Randomized version.",
+"The post-quantum Module-Lattice-Based Digital Signature Algorithm, at security level 5. Randomized version.",
+"The post-quantum stateless hash-based digital signature algorithm, at security level 1. Randomized version.",
+"The post-quantum stateless hash-based digital signature algorithm, at security level 1. Randomized pre-hash version supporting SHA256 digests."
 ],
 "type": "string"
 },

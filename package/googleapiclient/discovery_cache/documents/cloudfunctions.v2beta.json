@@ -118,6 +118,12 @@
 "name"
 ],
 "parameters": {
+"extraLocationTypes": {
+"description": "Optional. Do not use this field. It is unsupported and is ignored unless explicitly documented otherwise. This is primarily for internal usage.",
+"location": "query",
+"repeated": true,
+"type": "string"
+},
 "filter": {
 "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
 "location": "query",
@@ -268,6 +274,34 @@
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
+"detachFunction": {
+"description": "Detaches 2nd Gen function to Cloud Run function.",
+"flatPath": "v2beta/projects/{projectsId}/locations/{locationsId}/functions/{functionsId}:detachFunction",
+"httpMethod": "POST",
+"id": "cloudfunctions.projects.locations.functions.detachFunction",
+"parameterOrder": [
+"name"
+],
+"parameters": {
+"name": {
+"description": "Required. The name of the function for which should be detached.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/functions/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v2beta/{+name}:detachFunction",
+"request": {
+"$ref": "DetachFunctionRequest"
+},
+"response": {
+"$ref": "Operation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
 "generateDownloadUrl": {
 "description": "Returns a signed URL for downloading deployed function source code. The URL is only valid for a limited period and should be used within 30 minutes of generation. For more information about the signed URL usage see: https://cloud.google.com/storage/docs/access-control/signed-urls",
 "flatPath": "v2beta/projects/{projectsId}/locations/{locationsId}/functions/{functionsId}:generateDownloadUrl",
@@ -400,7 +434,7 @@
 "type": "string"
 },
 "orderBy": {
-"description": "The sorting order of the resources returned. Value should be a comma separated list of fields. The default sorting oder is ascending. See https://google.aip.dev/132#ordering.",
+"description": "The sorting order of the resources returned. Value should be a comma separated list of fields. The default sorting order is ascending. See https://google.aip.dev/132#ordering.",
 "location": "query",
 "type": "string"
 },
@@ -665,6 +699,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v2beta/{+name}/operations",
@@ -716,7 +755,7 @@
 }
 }
 },
-"revision": "20240905",
+"revision": "20251023",
 "rootUrl": "https://cloudfunctions.googleapis.com/",
 "schemas": {
 "AbortFunctionUpgradeRequest": {
@@ -814,7 +853,8 @@
 "type": "string"
 },
 "dockerRegistry": {
-"description": "Docker Registry to use for this deployment. This configuration is only applicable to 1st Gen functions, 2nd Gen functions can only use Artifact Registry. If unspecified, it defaults to `ARTIFACT_REGISTRY`. If `docker_repository` field is specified, this field should either be left unspecified or set to `ARTIFACT_REGISTRY`.",
+"deprecated": true,
+"description": "Docker Registry to use for this deployment. This configuration is only applicable to 1st Gen functions, 2nd Gen functions can only use Artifact Registry. Deprecated: as of March 2025, `CONTAINER_REGISTRY` option is no longer available in response to Container Registry's deprecation: https://cloud.google.com/artifact-registry/docs/transition/transition-from-gcr Please use Artifact Registry instead, which is the default choice. If unspecified, it defaults to `ARTIFACT_REGISTRY`. If `docker_repository` field is specified, this field should either be left unspecified or set to `ARTIFACT_REGISTRY`.",
 "enum": [
 "DOCKER_REGISTRY_UNSPECIFIED",
 "CONTAINER_REGISTRY",
@@ -828,7 +868,7 @@
 "type": "string"
 },
 "dockerRepository": {
-"description": "Repository in Artifact Registry to which the function docker image will be pushed after it is built by Cloud Build. If specified by user, it is created and managed by user with a customer managed encryption key. Otherwise, GCF will create and use a repository named 'gcf-artifacts' for every deployed region. It must match the pattern `projects/{project}/locations/{location}/repositories/{repository}`. Cross-project repositories are not supported. Cross-location repositories are not supported. Repository format must be 'DOCKER'.",
+"description": "Repository in Artifact Registry to which the function docker image will be pushed after it is built by Cloud Build. If specified by user, it is created and managed by user with a customer managed encryption key. Otherwise, GCF will create and use a repository named 'gcf-artifacts' for every deployed region. It must match the pattern `projects/{project}/locations/{location}/repositories/{repository}`. Repository format must be 'DOCKER'.",
 "type": "string"
 },
 "entryPoint": {
@@ -897,6 +937,34 @@
 "description": "Year of the date. Must be from 1 to 9999, or 0 to specify a date without a year.",
 "format": "int32",
 "type": "integer"
+}
+},
+"type": "object"
+},
+"DetachFunctionRequest": {
+"description": "Request for the `DetachFunction` method.",
+"id": "DetachFunctionRequest",
+"properties": {},
+"type": "object"
+},
+"DirectVpcNetworkInterface": {
+"description": "The Direct VPC network interface. This is mutually exclusive with VPC Connector.",
+"id": "DirectVpcNetworkInterface",
+"properties": {
+"network": {
+"description": "Optional. The name of the VPC network to which the function will be connected. Specify either a VPC network or a subnet, or both. If you specify only a network, the subnet uses the same name as the network.",
+"type": "string"
+},
+"subnetwork": {
+"description": "Optional. The name of the VPC subnetwork that the Cloud Function resource will get IPs from. Specify either a VPC network or a subnet, or both. If both network and subnetwork are specified, the given VPC subnetwork must belong to the given VPC network. If subnetwork is not specified, the subnetwork with the same name with the network will be used.",
+"type": "string"
+},
+"tags": {
+"description": "Optional. Network tags applied to this Cloud Function resource.",
+"items": {
+"type": "string"
+},
+"type": "array"
 }
 },
 "type": "object"
@@ -1051,6 +1119,11 @@
 "description": "A user-defined name of the function. Function names must be unique globally and match pattern `projects/*/locations/*/functions/*`",
 "type": "string"
 },
+"satisfiesPzi": {
+"description": "Output only. Reserved for future use.",
+"readOnly": true,
+"type": "boolean"
+},
 "satisfiesPzs": {
 "description": "Output only. Reserved for future use.",
 "readOnly": true,
@@ -1068,7 +1141,9 @@
 "FAILED",
 "DEPLOYING",
 "DELETING",
-"UNKNOWN"
+"UNKNOWN",
+"DETACHING",
+"DETACH_FAILED"
 ],
 "enumDescriptions": [
 "Not specified. Invalid state.",
@@ -1076,7 +1151,9 @@
 "Function deployment failed and the function is not serving.",
 "Function is being created or updated.",
 "Function is being deleted.",
-"Function deployment failed and the function serving state is undefined. The function should be updated or deleted to move it out of this state."
+"Function deployment failed and the function serving state is undefined. The function should be updated or deleted to move it out of this state.",
+"Function is being detached.",
+"Function detach failed and the function is still serving."
 ],
 "readOnly": true,
 "type": "string"
@@ -1210,6 +1287,11 @@
 "format": "google-datetime",
 "type": "string"
 },
+"customIamRoleDetected": {
+"description": "Output only. Whether a custom IAM role binding was detected during the upgrade.",
+"readOnly": true,
+"type": "boolean"
+},
 "endTime": {
 "description": "The time the operation finished running.",
 "format": "google-datetime",
@@ -1226,7 +1308,8 @@
 "ROLLBACK_FUNCTION_UPGRADE_TRAFFIC",
 "SETUP_FUNCTION_UPGRADE_CONFIG",
 "ABORT_FUNCTION_UPGRADE",
-"COMMIT_FUNCTION_UPGRADE"
+"COMMIT_FUNCTION_UPGRADE",
+"DETACH_FUNCTION"
 ],
 "enumDescriptions": [
 "Unspecified",
@@ -1237,7 +1320,8 @@
 "RollbackFunctionUpgradeTraffic",
 "SetupFunctionUpgradeConfig",
 "AbortFunctionUpgrade",
-"CommitFunctionUpgrade"
+"CommitFunctionUpgrade",
+"DetachFunction"
 ],
 "type": "string"
 },
@@ -1296,7 +1380,7 @@
 ],
 "enumDescriptions": [
 "Not specified. Invalid name.",
-"Artifact Regsitry Stage",
+"Artifact Registry Stage",
 "Build Stage",
 "Service Stage",
 "Trigger Stage",
@@ -1425,6 +1509,13 @@
 "description": "A list of operations that matches the specified filter in the request.",
 "items": {
 "$ref": "Operation"
+},
+"type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
 },
 "type": "array"
 }
@@ -1807,6 +1898,27 @@
 "description": "Optional. The binary authorization policy to be checked when deploying the Cloud Run service.",
 "type": "string"
 },
+"directVpcEgress": {
+"description": "Optional. Egress settings for direct VPC. If not provided, it defaults to VPC_EGRESS_PRIVATE_RANGES_ONLY.",
+"enum": [
+"DIRECT_VPC_EGRESS_UNSPECIFIED",
+"VPC_EGRESS_PRIVATE_RANGES_ONLY",
+"VPC_EGRESS_ALL_TRAFFIC"
+],
+"enumDescriptions": [
+"Unspecified.",
+"Sends only traffic to internal addresses through the VPC network.",
+"Sends all outbound traffic through the VPC network."
+],
+"type": "string"
+},
+"directVpcNetworkInterface": {
+"description": "Optional. The Direct VPC network interface for the Cloud Function. Currently only a single Direct VPC is supported.",
+"items": {
+"$ref": "DirectVpcNetworkInterface"
+},
+"type": "array"
+},
 "environmentVariables": {
 "additionalProperties": {
 "type": "string"
@@ -1937,7 +2049,12 @@
 "SetupFunctionUpgradeConfigRequest": {
 "description": "Request for the `SetupFunctionUpgradeConfig` method.",
 "id": "SetupFunctionUpgradeConfigRequest",
-"properties": {},
+"properties": {
+"triggerServiceAccount": {
+"description": "Optional. The trigger's service account. The service account must have permission to invoke Cloud Run services, the permission is `run.routes.invoke`. If empty, defaults to the Compute Engine default service account: `{project_number}-compute@developer.gserviceaccount.com`.",
+"type": "string"
+}
+},
 "type": "object"
 },
 "Source": {
@@ -2058,7 +2175,7 @@
 "type": "object"
 },
 "UpgradeInfo": {
-"description": "Information related to: * A function's eligibility for 1st Gen to 2nd Gen migration * Current state of migration for function undergoing migration.",
+"description": "Information related to: * A function's eligibility for 1st Gen to 2nd Gen migration. * Current state of migration for function undergoing migration.",
 "id": "UpgradeInfo",
 "properties": {
 "buildConfig": {
@@ -2078,6 +2195,7 @@
 "enum": [
 "UPGRADE_STATE_UNSPECIFIED",
 "ELIGIBLE_FOR_2ND_GEN_UPGRADE",
+"INELIGIBLE_FOR_UPGRADE_UNTIL_REDEPLOYMENT",
 "UPGRADE_OPERATION_IN_PROGRESS",
 "SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL",
 "SETUP_FUNCTION_UPGRADE_CONFIG_ERROR",
@@ -2089,7 +2207,8 @@
 ],
 "enumDescriptions": [
 "Unspecified state. Most functions are in this upgrade state.",
-"Functions in this state are eligible for 1st Gen -> 2nd Gen upgrade.",
+"Functions in this state are eligible for 1st Gen upgrade.",
+"Functions in this state are ineligible for 1st Gen upgrade until redeployment with newer runtime.",
 "An upgrade related operation is in progress.",
 "SetupFunctionUpgradeConfig API was successful and a 2nd Gen function has been created based on 1st Gen function instance.",
 "SetupFunctionUpgradeConfig API was un-successful.",

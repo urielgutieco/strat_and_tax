@@ -112,41 +112,10 @@
 "global": {
 "resources": {
 "partnerTenants": {
+"deprecated": true,
 "methods": {
-"create": {
-"description": "Creates a new BeyondCorp Enterprise partnerTenant in a given organization and can only be called by onboarded BeyondCorp Enterprise partner.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.create",
-"parameterOrder": [
-"parent"
-],
-"parameters": {
-"parent": {
-"description": "Required. The resource name of the parent organization using the form: `organizations/{organization_id}/locations/global`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+parent}/partnerTenants",
-"request": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerTenant"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
 "delete": {
+"deprecated": true,
 "description": "Deletes a single PartnerTenant.",
 "flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}",
 "httpMethod": "DELETE",
@@ -177,6 +146,7 @@
 ]
 },
 "get": {
+"deprecated": true,
 "description": "Gets details of a single PartnerTenant.",
 "flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}",
 "httpMethod": "GET",
@@ -201,38 +171,8 @@
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:getIamPolicy",
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
 "list": {
+"deprecated": true,
 "description": "Lists PartnerTenants in a given organization.",
 "flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants",
 "httpMethod": "GET",
@@ -277,610 +217,6 @@
 "scopes": [
 "https://www.googleapis.com/auth/cloud-platform"
 ]
-},
-"patch": {
-"description": "Updates a single PartnerTenant.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}",
-"httpMethod": "PATCH",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.patch",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Output only. Unique resource name of the PartnerTenant. The name is ignored when creating PartnerTenant.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-},
-"updateMask": {
-"description": "Required. Field mask is used to specify the fields to be overwritten in the PartnerTenant resource by the update. The fields specified in the update_mask are relative to the resource, not the full request. A field will be overwritten if it is in the mask. If the user does not provide a mask then all fields will be overwritten. Mutable fields: display_name, partner_metadata, group_information.",
-"format": "google-fieldmask",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"request": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerTenant"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:setIamPolicy",
-"request": {
-"$ref": "GoogleIamV1SetIamPolicyRequest"
-},
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-},
-"resources": {
-"browserDlpRules": {
-"methods": {
-"create": {
-"description": "Creates a new BrowserDlpRule in a given organization and PartnerTenant.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.create",
-"parameterOrder": [
-"parent"
-],
-"parameters": {
-"parent": {
-"description": "Required. The resource name of the BrowserDlpRule parent using the form: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+parent}/browserDlpRules",
-"request": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaBrowserDlpRule"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"delete": {
-"description": "Deletes an existing BrowserDlpRule.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules/{browserDlpRulesId}",
-"httpMethod": "DELETE",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.delete",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Required. The resource name of the BrowserDlpRule using the form: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}/browserDlpRules/{browser_dlp_rule_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/browserDlpRules/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"get": {
-"description": "Gets details of a single BrowserDlpRule.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules/{browserDlpRulesId}",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.get",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Required. The resource name of the BrowserDlpRule using the form: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}/browserDlpRules/{browser_dlp_rule_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/browserDlpRules/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"response": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaBrowserDlpRule"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules/{browserDlpRulesId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/browserDlpRules/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:getIamPolicy",
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"list": {
-"description": "Lists BrowserDlpRules for PartnerTenant in a given organization.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.list",
-"parameterOrder": [
-"parent"
-],
-"parameters": {
-"parent": {
-"description": "Required. The parent partnerTenant to which the BrowserDlpRules belong. Format: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+parent}/browserDlpRules",
-"response": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaListBrowserDlpRulesResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"patch": {
-"description": "Update an existing BrowserDlpRule in a given organization and PartnerTenant.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules/{browserDlpRulesId}",
-"httpMethod": "PATCH",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.patch",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Output only. Unique resource name. The name is ignored when creating BrowserDlpRule.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/browserDlpRules/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-},
-"updateMask": {
-"description": "Required. Supported fields include: rule_setting.value.*, group.id/group.email.",
-"format": "google-fieldmask",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"request": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaBrowserDlpRule"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules/{browserDlpRulesId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/browserDlpRules/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:setIamPolicy",
-"request": {
-"$ref": "GoogleIamV1SetIamPolicyRequest"
-},
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/browserDlpRules/{browserDlpRulesId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.browserDlpRules.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/browserDlpRules/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
-},
-"proxyConfigs": {
-"methods": {
-"create": {
-"description": "Creates a new BeyondCorp Enterprise ProxyConfig in a given organization and PartnerTenant. Can only be called by on onboarded Beyondcorp Enterprise partner.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.create",
-"parameterOrder": [
-"parent"
-],
-"parameters": {
-"parent": {
-"description": "Required. The resource name of the parent PartnerTenant using the form: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+parent}/proxyConfigs",
-"request": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyConfig"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"delete": {
-"description": "Deletes a single ProxyConfig.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs/{proxyConfigsId}",
-"httpMethod": "DELETE",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.delete",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Required. Name of the resource.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/proxyConfigs/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"get": {
-"description": "Gets details of a single ProxyConfig.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs/{proxyConfigsId}",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.get",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Required. The resource name of the ProxyConfig using the form: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}/proxyConfigs/{proxy_config_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/proxyConfigs/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"response": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyConfig"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs/{proxyConfigsId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/proxyConfigs/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:getIamPolicy",
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"list": {
-"description": "Lists ProxyConfigs for PartnerTenant in a given organization.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs",
-"httpMethod": "GET",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.list",
-"parameterOrder": [
-"parent"
-],
-"parameters": {
-"filter": {
-"description": "Optional. A filter specifying constraints of a list operation. All fields in the ProxyConfig message are supported. For example, the following query will return the ProxyConfigs with displayName \"test-config\" organizations/${ORG_ID}/locations/global/partnerTenants/${PARTNER_TENANT_ID}/proxyConfigs?filter=displayName=\"test-config\" Nested fields are also supported. The follow query will return ProxyConfigs with pacUri \"example.com/pac.pac\" organizations/${ORG_ID}/locations/global/partnerTenants/${PARTNER_TENANT_ID}/proxyConfigs?filter=routingInfo.pacUri=\"example.com/pac.pac\" For more information, please refer to https://google.aip.dev/160.",
-"location": "query",
-"type": "string"
-},
-"orderBy": {
-"description": "Optional. Specifies the ordering of results. See [Sorting order](https://cloud.google.com/apis/design/design_patterns#sorting_order) for more information.",
-"location": "query",
-"type": "string"
-},
-"pageSize": {
-"description": "Optional. The maximum number of items to return. If not specified, a default value of 50 will be used by the service. Regardless of the page_size value, the response may include a partial list and a caller should only rely on response's next_page_token to determine if there are more instances left to be queried.",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"pageToken": {
-"description": "Optional. The next_page_token value returned from a previous ListProxyConfigsRequest, if any.",
-"location": "query",
-"type": "string"
-},
-"parent": {
-"description": "Required. The parent organization to which the ProxyConfigs belong. Format: `organizations/{organization_id}/locations/global/partnerTenants/{partner_tenant_id}`",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+parent}/proxyConfigs",
-"response": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaListProxyConfigsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"patch": {
-"description": "Updates a single proxy config.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs/{proxyConfigsId}",
-"httpMethod": "PATCH",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.patch",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Output only. ProxyConfig resource name.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/proxyConfigs/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-},
-"updateMask": {
-"description": "Required. Mutable fields include: display_name, proxy_uri, routing_info, transport_info, encryption_info.",
-"format": "google-fieldmask",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"request": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyConfig"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs/{proxyConfigsId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/proxyConfigs/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:setIamPolicy",
-"request": {
-"$ref": "GoogleIamV1SetIamPolicyRequest"
-},
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/organizations/{organizationsId}/locations/global/partnerTenants/{partnerTenantsId}/proxyConfigs/{proxyConfigsId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.organizations.locations.global.partnerTenants.proxyConfigs.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^organizations/[^/]+/locations/global/partnerTenants/[^/]+/proxyConfigs/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
 }
 }
 }
@@ -1117,7 +453,7 @@
 "operations": {
 "methods": {
 "cancel": {
-"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "flatPath": "v1alpha/organizations/{organizationsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 "httpMethod": "POST",
 "id": "beyondcorp.organizations.locations.operations.cancel",
@@ -1225,6 +561,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v1alpha/{+name}/operations",
@@ -1453,6 +794,12 @@
 "name"
 ],
 "parameters": {
+"extraLocationTypes": {
+"description": "Optional. Unless explicitly documented otherwise, don't use this unsupported field which is primarily intended for internal usage.",
+"location": "query",
+"repeated": true,
+"type": "string"
+},
 "filter": {
 "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
 "location": "query",
@@ -2364,43 +1711,6 @@
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
-"shouldThrottle": {
-"description": "Calls the Bouncer method ShouldThrottle to check if a request should be throttled.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}:shouldThrottle",
-"httpMethod": "GET",
-"id": "beyondcorp.projects.locations.appGateways.shouldThrottle",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Required. Name of the resource",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/appGateways/[^/]+$",
-"required": true,
-"type": "string"
-},
-"port": {
-"description": "Optional. The port that is being throttled",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"requestedAmount": {
-"description": "Optional. The current throughput through the port (mbps)",
-"format": "int64",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}:shouldThrottle",
-"response": {
-"$ref": "ShouldThrottleResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
 "testIamPermissions": {
 "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
 "flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/appGateways/{appGatewaysId}:testIamPermissions",
@@ -2596,188 +1906,6 @@
 "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
 "location": "path",
 "pattern": "^projects/[^/]+/locations/[^/]+/applications/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
-},
-"clientConnectorServices": {
-"methods": {
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "beyondcorp.projects.locations.clientConnectorServices.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:getIamPolicy",
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.clientConnectorServices.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:setIamPolicy",
-"request": {
-"$ref": "GoogleIamV1SetIamPolicyRequest"
-},
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/clientConnectorServices/{clientConnectorServicesId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.clientConnectorServices.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/clientConnectorServices/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
-},
-"clientGateways": {
-"methods": {
-"getIamPolicy": {
-"description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}:getIamPolicy",
-"httpMethod": "GET",
-"id": "beyondcorp.projects.locations.clientGateways.getIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"options.requestedPolicyVersion": {
-"description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-"format": "int32",
-"location": "query",
-"type": "integer"
-},
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:getIamPolicy",
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"setIamPolicy": {
-"description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}:setIamPolicy",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.clientGateways.setIamPolicy",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:setIamPolicy",
-"request": {
-"$ref": "GoogleIamV1SetIamPolicyRequest"
-},
-"response": {
-"$ref": "GoogleIamV1Policy"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/clientGateways/{clientGatewaysId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.clientGateways.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/clientGateways/[^/]+$",
 "required": true,
 "type": "string"
 }
@@ -3094,34 +2222,6 @@
 "scopes": [
 "https://www.googleapis.com/auth/cloud-platform"
 ]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.connections.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/connections/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
 }
 }
 },
@@ -3431,151 +2531,6 @@
 "scopes": [
 "https://www.googleapis.com/auth/cloud-platform"
 ]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/connectors/{connectorsId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.connectors.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/connectors/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
-},
-"global": {
-"resources": {
-"securityGateways": {
-"resources": {
-"applications": {
-"methods": {
-"create": {
-"description": "Creates a new Application in a given project and location.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/global/securityGateways/{securityGatewaysId}/applications",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.global.securityGateways.applications.create",
-"parameterOrder": [
-"parent"
-],
-"parameters": {
-"applicationId": {
-"description": "Optional. User-settable Application resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or letter.",
-"location": "query",
-"type": "string"
-},
-"parent": {
-"description": "Required. The resource name of the parent SecurityGateway using the form: `projects/{project_id}/locations/global/securityGateways/{security_gateway_id}`",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/global/securityGateways/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request.",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+parent}/applications",
-"request": {
-"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplication"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"patch": {
-"description": "Updates the parameters of a single Application.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/global/securityGateways/{securityGatewaysId}/applications/{applicationsId}",
-"httpMethod": "PATCH",
-"id": "beyondcorp.projects.locations.global.securityGateways.applications.patch",
-"parameterOrder": [
-"name"
-],
-"parameters": {
-"name": {
-"description": "Identifier. Name of the resource.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/global/securityGateways/[^/]+/applications/[^/]+$",
-"required": true,
-"type": "string"
-},
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request timed out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
-"location": "query",
-"type": "string"
-},
-"updateMask": {
-"description": "Required. Mutable fields include: display_name.",
-"format": "google-fieldmask",
-"location": "query",
-"type": "string"
-}
-},
-"path": "v1alpha/{+name}",
-"request": {
-"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplication"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
-"testIamPermissions": {
-"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/global/securityGateways/{securityGatewaysId}/applications/{applicationsId}:testIamPermissions",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.global.securityGateways.applications.testIamPermissions",
-"parameterOrder": [
-"resource"
-],
-"parameters": {
-"resource": {
-"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/global/securityGateways/[^/]+/applications/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+resource}:testIamPermissions",
-"request": {
-"$ref": "GoogleIamV1TestIamPermissionsRequest"
-},
-"response": {
-"$ref": "GoogleIamV1TestIamPermissionsResponse"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-}
-}
-}
-}
 }
 }
 },
@@ -3810,7 +2765,7 @@
 "operations": {
 "methods": {
 "cancel": {
-"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 "httpMethod": "POST",
 "id": "beyondcorp.projects.locations.operations.cancel",
@@ -3918,6 +2873,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v1alpha/{+name}/operations",
@@ -3933,7 +2893,7 @@
 "securityGateways": {
 "methods": {
 "create": {
-"description": "Creates a new SecurityGateway in a given project and location.",
+"description": "Creates a new Security Gateway in a given project and location.",
 "flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways",
 "httpMethod": "POST",
 "id": "beyondcorp.projects.locations.securityGateways.create",
@@ -3949,7 +2909,7 @@
 "type": "string"
 },
 "requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request.",
+"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request.",
 "location": "query",
 "type": "string"
 },
@@ -4129,7 +3089,7 @@
 "type": "string"
 },
 "updateMask": {
-"description": "Required. Mutable fields include: display_name, hubs.",
+"description": "Optional. Mutable fields include: display_name, hubs.",
 "format": "google-fieldmask",
 "location": "query",
 "type": "string"
@@ -4174,34 +3134,6 @@
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
-"setPeering": {
-"description": "This is a custom method to allow customers to create a peering connections between Google network and customer networks. This is enabled only for the allowlisted customers.",
-"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}:setPeering",
-"httpMethod": "POST",
-"id": "beyondcorp.projects.locations.securityGateways.setPeering",
-"parameterOrder": [
-"securityGateway"
-],
-"parameters": {
-"securityGateway": {
-"description": "Required. BeyondCorp SecurityGateway name using the form: `projects/{project}/locations/{location}/securityGateways/{security_gateway}`",
-"location": "path",
-"pattern": "^projects/[^/]+/locations/[^/]+/securityGateways/[^/]+$",
-"required": true,
-"type": "string"
-}
-},
-"path": "v1alpha/{+securityGateway}:setPeering",
-"request": {
-"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaSetPeeringRequest"
-},
-"response": {
-"$ref": "GoogleLongrunningOperation"
-},
-"scopes": [
-"https://www.googleapis.com/auth/cloud-platform"
-]
-},
 "testIamPermissions": {
 "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
 "flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}:testIamPermissions",
@@ -4234,8 +3166,46 @@
 "resources": {
 "applications": {
 "methods": {
+"create": {
+"description": "Creates a new Application in a given project and location.",
+"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}/applications",
+"httpMethod": "POST",
+"id": "beyondcorp.projects.locations.securityGateways.applications.create",
+"parameterOrder": [
+"parent"
+],
+"parameters": {
+"applicationId": {
+"description": "Optional. User-settable Application resource ID. * Must start with a letter. * Must contain between 4-63 characters from `/a-z-/`. * Must end with a number or letter.",
+"location": "query",
+"type": "string"
+},
+"parent": {
+"description": "Required. The resource name of the parent SecurityGateway using the form: `projects/{project_id}/locations/global/securityGateways/{security_gateway_id}`",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/securityGateways/[^/]+$",
+"required": true,
+"type": "string"
+},
+"requestId": {
+"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request.",
+"location": "query",
+"type": "string"
+}
+},
+"path": "v1alpha/{+parent}/applications",
+"request": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplication"
+},
+"response": {
+"$ref": "GoogleLongrunningOperation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
 "delete": {
-"description": "Deletes a single Application.",
+"description": "Deletes a single application.",
 "flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}/applications/{applicationsId}",
 "httpMethod": "DELETE",
 "id": "beyondcorp.projects.locations.securityGateways.applications.delete",
@@ -4371,6 +3341,45 @@
 "https://www.googleapis.com/auth/cloud-platform"
 ]
 },
+"patch": {
+"description": "Updates the parameters of a single Application.",
+"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}/applications/{applicationsId}",
+"httpMethod": "PATCH",
+"id": "beyondcorp.projects.locations.securityGateways.applications.patch",
+"parameterOrder": [
+"name"
+],
+"parameters": {
+"name": {
+"description": "Identifier. Name of the resource.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/securityGateways/[^/]+/applications/[^/]+$",
+"required": true,
+"type": "string"
+},
+"requestId": {
+"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request timed out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+"location": "query",
+"type": "string"
+},
+"updateMask": {
+"description": "Optional. Mutable fields include: display_name.",
+"format": "google-fieldmask",
+"location": "query",
+"type": "string"
+}
+},
+"path": "v1alpha/{+name}",
+"request": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplication"
+},
+"response": {
+"$ref": "GoogleLongrunningOperation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform"
+]
+},
 "setIamPolicy": {
 "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.",
 "flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}/applications/{applicationsId}:setIamPolicy",
@@ -4398,6 +3407,34 @@
 "scopes": [
 "https://www.googleapis.com/auth/cloud-platform"
 ]
+},
+"testIamPermissions": {
+"description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+"flatPath": "v1alpha/projects/{projectsId}/locations/{locationsId}/securityGateways/{securityGatewaysId}/applications/{applicationsId}:testIamPermissions",
+"httpMethod": "POST",
+"id": "beyondcorp.projects.locations.securityGateways.applications.testIamPermissions",
+"parameterOrder": [
+"resource"
+],
+"parameters": {
+"resource": {
+"description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+"location": "path",
+"pattern": "^projects/[^/]+/locations/[^/]+/securityGateways/[^/]+/applications/[^/]+$",
+"required": true,
+"type": "string"
+}
+},
+"path": "v1alpha/{+resource}:testIamPermissions",
+"request": {
+"$ref": "GoogleIamV1TestIamPermissionsRequest"
+},
+"response": {
+"$ref": "GoogleIamV1TestIamPermissionsResponse"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform"
+]
 }
 }
 }
@@ -4408,7 +3445,7 @@
 }
 }
 },
-"revision": "20241011",
+"revision": "20250930",
 "rootUrl": "https://beyondcorp.googleapis.com/",
 "schemas": {
 "AllocatedConnection": {
@@ -4556,7 +3593,7 @@
 "type": "string"
 },
 "requestedCancellation": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have google.longrunning.Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -5062,7 +4099,7 @@
 "type": "string"
 },
 "requestedCancellation": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have google.longrunning.Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -5258,7 +4295,7 @@
 "type": "string"
 },
 "requestedCancellation": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have google.longrunning.Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -5370,7 +4407,7 @@
 "type": "string"
 },
 "requestedCancellation": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have google.longrunning.Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -5542,7 +4579,7 @@
 "type": "string"
 },
 "requestedCancellation": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have google.longrunning.Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -5781,7 +4818,7 @@
 "type": "string"
 },
 "requestedCancellation": {
-"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Output only. Identifies whether the user has requested cancellation of the operation. Operations that have successfully been cancelled have google.longrunning.Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "readOnly": true,
 "type": "boolean"
 },
@@ -5803,42 +4840,8 @@
 },
 "type": "object"
 },
-"GoogleCloudBeyondcorpPartnerservicesV1alphaBrowserDlpRule": {
-"description": "Browser DLP Rule for a PartnerTenant",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaBrowserDlpRule",
-"properties": {
-"group": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaGroup",
-"description": "Required. The group to which this Rule should be applied to."
-},
-"name": {
-"description": "Output only. Unique resource name. The name is ignored when creating BrowserDlpRule.",
-"readOnly": true,
-"type": "string"
-},
-"ruleSetting": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaRuleSetting",
-"description": "Required. The policy settings to apply."
-}
-},
-"type": "object"
-},
-"GoogleCloudBeyondcorpPartnerservicesV1alphaEncryptionInfo": {
-"description": "Message contains the JWT encryption information for the proxy server.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaEncryptionInfo",
-"properties": {
-"encryptionSaEmail": {
-"description": "Optional. Service Account for encryption key.",
-"type": "string"
-},
-"jwk": {
-"description": "Optional. JWK in string.",
-"type": "string"
-}
-},
-"type": "object"
-},
 "GoogleCloudBeyondcorpPartnerservicesV1alphaGroup": {
+"deprecated": true,
 "description": "Message to capture group information",
 "id": "GoogleCloudBeyondcorpPartnerservicesV1alphaGroup",
 "properties": {
@@ -5853,21 +4856,8 @@
 },
 "type": "object"
 },
-"GoogleCloudBeyondcorpPartnerservicesV1alphaListBrowserDlpRulesResponse": {
-"description": "Message for response to listing BrowserDlpRules.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaListBrowserDlpRulesResponse",
-"properties": {
-"browserDlpRules": {
-"description": "The list of BrowserDlpRule objects.",
-"items": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaBrowserDlpRule"
-},
-"type": "array"
-}
-},
-"type": "object"
-},
 "GoogleCloudBeyondcorpPartnerservicesV1alphaListPartnerTenantsResponse": {
+"deprecated": true,
 "description": "Message for response to listing PartnerTenants.",
 "id": "GoogleCloudBeyondcorpPartnerservicesV1alphaListPartnerTenantsResponse",
 "properties": {
@@ -5885,25 +4875,8 @@
 },
 "type": "object"
 },
-"GoogleCloudBeyondcorpPartnerservicesV1alphaListProxyConfigsResponse": {
-"description": "Message for response to listing ProxyConfigs.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaListProxyConfigsResponse",
-"properties": {
-"nextPageToken": {
-"description": "A token to retrieve the next page of results, or empty if there are no more results in the list.",
-"type": "string"
-},
-"proxyConfigs": {
-"description": "The list of ProxyConfig objects.",
-"items": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyConfig"
-},
-"type": "array"
-}
-},
-"type": "object"
-},
 "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerMetadata": {
+"deprecated": true,
 "description": "Metadata associated with PartnerTenant and is provided by the Partner.",
 "id": "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerMetadata",
 "properties": {
@@ -5919,6 +4892,7 @@
 "type": "object"
 },
 "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerServiceOperationMetadata": {
+"deprecated": true,
 "description": "Represents the metadata of the long-running operation.",
 "id": "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerServiceOperationMetadata",
 "properties": {
@@ -5963,6 +4937,7 @@
 "type": "object"
 },
 "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerTenant": {
+"deprecated": true,
 "description": "Information about a BeyoncCorp Enterprise PartnerTenant.",
 "id": "GoogleCloudBeyondcorpPartnerservicesV1alphaPartnerTenant",
 "properties": {
@@ -5998,114 +4973,8 @@
 },
 "type": "object"
 },
-"GoogleCloudBeyondcorpPartnerservicesV1alphaProxyConfig": {
-"description": "Proxy Configuration of a PartnerTenant.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyConfig",
-"properties": {
-"createTime": {
-"description": "Output only. Timestamp when the resource was created.",
-"format": "google-datetime",
-"readOnly": true,
-"type": "string"
-},
-"displayName": {
-"description": "Optional. An arbitrary caller-provided name for the ProxyConfig. Cannot exceed 64 characters.",
-"type": "string"
-},
-"encryptionInfo": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaEncryptionInfo",
-"description": "Optional. Information to encrypt JWT for the proxy server."
-},
-"name": {
-"description": "Output only. ProxyConfig resource name.",
-"readOnly": true,
-"type": "string"
-},
-"proxyProtocolConfig": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyProtocolConfig",
-"description": "Optional. Protocol config data for the Proxy."
-},
-"proxyUri": {
-"description": "Required. The URI of the proxy server.",
-"type": "string"
-},
-"routingInfo": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaRoutingInfo",
-"description": "Required. Routing info to direct traffic to the proxy server."
-},
-"transportInfo": {
-"$ref": "GoogleCloudBeyondcorpPartnerservicesV1alphaTransportInfo",
-"description": "Optional. Transport layer information to verify for the proxy server."
-},
-"updateTime": {
-"description": "Output only. Timestamp when the resource was last modified.",
-"format": "google-datetime",
-"readOnly": true,
-"type": "string"
-}
-},
-"type": "object"
-},
-"GoogleCloudBeyondcorpPartnerservicesV1alphaProxyProtocolConfig": {
-"description": "The protocol data that specifies how to communicate with Partner's Proxy.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaProxyProtocolConfig",
-"properties": {
-"metadata": {
-"additionalProperties": {
-"type": "string"
-},
-"description": "Optional. Untyped property bag to be sent back to the proxy using client specific mechanism.",
-"type": "object"
-}
-},
-"type": "object"
-},
-"GoogleCloudBeyondcorpPartnerservicesV1alphaRoutingInfo": {
-"description": "Message contains the routing information to direct traffic to the proxy server.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaRoutingInfo",
-"properties": {
-"pacUri": {
-"description": "Required. Proxy Auto-Configuration (PAC) URI.",
-"type": "string"
-}
-},
-"type": "object"
-},
-"GoogleCloudBeyondcorpPartnerservicesV1alphaRuleSetting": {
-"description": "Message to capture settings for a BrowserDlpRule",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaRuleSetting",
-"properties": {
-"type": {
-"description": "Required. Immutable. The type of the Setting. .",
-"type": "string"
-},
-"value": {
-"additionalProperties": {
-"description": "Properties of the object.",
-"type": "any"
-},
-"description": "Required. The value of the Setting.",
-"type": "object"
-}
-},
-"type": "object"
-},
-"GoogleCloudBeyondcorpPartnerservicesV1alphaTransportInfo": {
-"description": "Message contains the transport layer information to verify the proxy server.",
-"id": "GoogleCloudBeyondcorpPartnerservicesV1alphaTransportInfo",
-"properties": {
-"serverCaCertPem": {
-"description": "Required. PEM encoded CA certificate associated with the proxy server certificate.",
-"type": "string"
-},
-"sslDecryptCaCertPem": {
-"description": "Optional. PEM encoded CA certificate associated with the certificate used by proxy server for SSL decryption.",
-"type": "string"
-}
-},
-"type": "object"
-},
 "GoogleCloudBeyondcorpPartnerservicesV1mainPartnerServiceOperationMetadata": {
+"deprecated": true,
 "description": "Represents the metadata of the long-running operation.",
 "id": "GoogleCloudBeyondcorpPartnerservicesV1mainPartnerServiceOperationMetadata",
 "properties": {
@@ -6498,10 +5367,13 @@
 "readOnly": true,
 "type": "string"
 },
+"csgCustomer": {
+"description": "Optional. Whether the subscription is being created as part of the Citrix flow. If this field is set to true, the subscription should have both the start_time and end_time set in the request and the billing account used will be the Citrix master billing account regardless of what its set to in the request. This field can only be set to true in create requests.",
+"type": "boolean"
+},
 "endTime": {
-"description": "Output only. End time of the subscription.",
+"description": "Optional. End time of the subscription.",
 "format": "google-datetime",
-"readOnly": true,
 "type": "string"
 },
 "name": {
@@ -6526,9 +5398,8 @@
 "type": "string"
 },
 "startTime": {
-"description": "Output only. Start time of the subscription.",
+"description": "Optional. Start time of the subscription.",
 "format": "google-datetime",
-"readOnly": true,
 "type": "string"
 },
 "state": {
@@ -6627,7 +5498,7 @@
 "type": "object"
 },
 "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplication": {
-"description": "A Beyondcorp Application resource information.",
+"description": "The information about an application resource.",
 "id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplication",
 "properties": {
 "createTime": {
@@ -6637,11 +5508,11 @@
 "type": "string"
 },
 "displayName": {
-"description": "Optional. An arbitrary user-provided name for the Application resource. Cannot exceed 64 characters.",
+"description": "Optional. An arbitrary user-provided name for the application resource. Cannot exceed 64 characters.",
 "type": "string"
 },
 "endpointMatchers": {
-"description": "Required. Endpoint matchers associated with an application. A combination of hostname and ports as endpoint matcher is used to match the application. Match conditions for OR logic. An array of match conditions to allow for multiple matching criteria. The rule is considered a match if one the conditions are met. The conditions can be one of the following combination (Hostname), (Hostname & Ports) EXAMPLES: Hostname - (\"*.abc.com\"), (\"xyz.abc.com\") Hostname and Ports - (\"abc.com\" and \"22\"), (\"abc.com\" and \"22,33\") etc",
+"description": "Required. Endpoint matchers associated with an application. A combination of hostname and ports as endpoint matchers is used to match the application. Match conditions for OR logic. An array of match conditions to allow for multiple matching criteria. The rule is considered a match if one of the conditions is met. The conditions should be the following combination: (Hostname & Ports) EXAMPLES: Hostname and Ports - (\"*.example.com\", \"443\"), (\"example.com\" and \"22\"), (\"example.com\" and \"22,33\") etc",
 "items": {
 "$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaEndpointMatcher"
 },
@@ -6651,11 +5522,214 @@
 "description": "Identifier. Name of the resource.",
 "type": "string"
 },
+"schema": {
+"description": "Optional. Type of the external application.",
+"enum": [
+"SCHEMA_UNSPECIFIED",
+"PROXY_GATEWAY",
+"API_GATEWAY"
+],
+"enumDescriptions": [
+"Default value. This value is unused.",
+"Proxy which routes traffic to actual applications, like Netscaler Gateway.",
+"Service Discovery API endpoint when Service Discovery is enabled in Gateway."
+],
+"type": "string"
+},
 "updateTime": {
 "description": "Output only. Timestamp when the resource was last modified.",
 "format": "google-datetime",
 "readOnly": true,
 "type": "string"
+},
+"upstreams": {
+"description": "Optional. Which upstream resources to forward traffic to.",
+"items": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstream"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstream": {
+"description": "Which upstream resource to forward traffic to.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstream",
+"properties": {
+"egressPolicy": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaEgressPolicy",
+"description": "Optional. Routing policy information."
+},
+"external": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstreamExternal",
+"description": "List of the external endpoints to forward traffic to."
+},
+"network": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstreamNetwork",
+"description": "Network to forward traffic to."
+},
+"proxyProtocol": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaProxyProtocolConfig",
+"description": "Optional. Enables proxy protocol configuration for the upstream."
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstreamExternal": {
+"description": "Endpoints to forward traffic to.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstreamExternal",
+"properties": {
+"endpoints": {
+"description": "Required. List of the endpoints to forward traffic to.",
+"items": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaEndpoint"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstreamNetwork": {
+"description": "Network to forward traffic to.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaApplicationUpstreamNetwork",
+"properties": {
+"name": {
+"description": "Required. Network name is of the format: `projects/{project}/global/networks/{network}",
+"type": "string"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeaders": {
+"description": "Contextual headers configuration.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeaders",
+"properties": {
+"deviceInfo": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDeviceInfo",
+"description": "Optional. Device info configuration."
+},
+"groupInfo": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedGroupInfo",
+"description": "Optional. Group info configuration."
+},
+"outputType": {
+"description": "Optional. Default output type for all enabled headers.",
+"enum": [
+"OUTPUT_TYPE_UNSPECIFIED",
+"PROTOBUF",
+"JSON",
+"NONE"
+],
+"enumDescriptions": [
+"Unspecified output type.",
+"Protobuf output type.",
+"JSON output type.",
+"Explicitly disable header output."
+],
+"type": "string"
+},
+"userInfo": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedUserInfo",
+"description": "Optional. User info configuration."
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDeviceInfo": {
+"description": "Delegated device info configuration.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDeviceInfo",
+"properties": {
+"outputType": {
+"description": "Optional. The output type of the delegated device info.",
+"enum": [
+"OUTPUT_TYPE_UNSPECIFIED",
+"PROTOBUF",
+"JSON",
+"NONE"
+],
+"enumDescriptions": [
+"Unspecified output type.",
+"Protobuf output type.",
+"JSON output type.",
+"Explicitly disable header output."
+],
+"type": "string"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedGroupInfo": {
+"description": "Delegated group info configuration.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedGroupInfo",
+"properties": {
+"outputType": {
+"description": "Optional. The output type of the delegated group info.",
+"enum": [
+"OUTPUT_TYPE_UNSPECIFIED",
+"PROTOBUF",
+"JSON",
+"NONE"
+],
+"enumDescriptions": [
+"Unspecified output type.",
+"Protobuf output type.",
+"JSON output type.",
+"Explicitly disable header output."
+],
+"type": "string"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedUserInfo": {
+"description": "Delegated user info configuration.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedUserInfo",
+"properties": {
+"outputType": {
+"description": "Optional. The output type of the delegated user info.",
+"enum": [
+"OUTPUT_TYPE_UNSPECIFIED",
+"PROTOBUF",
+"JSON",
+"NONE"
+],
+"enumDescriptions": [
+"Unspecified output type.",
+"Protobuf output type.",
+"JSON output type.",
+"Explicitly disable header output."
+],
+"type": "string"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaEgressPolicy": {
+"description": "Routing policy information.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaEgressPolicy",
+"properties": {
+"regions": {
+"description": "Required. List of the regions where the application sends traffic.",
+"items": {
+"type": "string"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaEndpoint": {
+"description": "Internet Gateway endpoint to forward traffic to.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaEndpoint",
+"properties": {
+"hostname": {
+"description": "Required. Hostname of the endpoint.",
+"type": "string"
+},
+"port": {
+"description": "Required. Port of the endpoint.",
+"format": "int32",
+"type": "integer"
 }
 },
 "type": "object"
@@ -6669,7 +5743,7 @@
 "type": "string"
 },
 "ports": {
-"description": "Optional. Ports of the application.",
+"description": "Required. Ports of the application.",
 "items": {
 "format": "int32",
 "type": "integer"
@@ -6755,31 +5829,59 @@
 },
 "type": "object"
 },
-"GoogleCloudBeyondcorpSecuritygatewaysV1alphaPeering": {
-"description": "VPC Peering details.",
-"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaPeering",
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaProxyProtocolConfig": {
+"description": "The configuration for the proxy.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaProxyProtocolConfig",
 "properties": {
-"dnsZones": {
-"description": "Optional. List of DNS zones for DNS peering with the customer VPC network.",
+"allowedClientHeaders": {
+"description": "Optional. List of the allowed client header names.",
 "items": {
 "type": "string"
 },
 "type": "array"
 },
-"targetNetwork": {
-"description": "Required. The name of the Target VPC network name in the format: `projects/{project}/global/networks/{network}",
+"clientIp": {
+"description": "Optional. Client IP configuration. The client IP address is included if true.",
+"type": "boolean"
+},
+"contextualHeaders": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeaders",
+"description": "Optional. Configuration for the contextual headers."
+},
+"gatewayIdentity": {
+"description": "Optional. Gateway identity configuration.",
+"enum": [
+"GATEWAY_IDENTITY_UNSPECIFIED",
+"RESOURCE_NAME"
+],
+"enumDescriptions": [
+"Unspecified gateway identity.",
+"Resource name for gateway identity, in the format: projects/{project_id}/locations/{location_id}/securityGateways/{security_gateway_id}"
+],
 "type": "string"
+},
+"metadataHeaders": {
+"additionalProperties": {
+"type": "string"
+},
+"description": "Optional. Custom resource specific headers along with the values. The names should conform to RFC 9110: > Field names SHOULD constrain themselves to alphanumeric characters, \"-\", and \".\", and SHOULD begin with a letter. Field values SHOULD contain only ASCII printable characters and tab.",
+"type": "object"
 }
 },
 "type": "object"
 },
 "GoogleCloudBeyondcorpSecuritygatewaysV1alphaSecurityGateway": {
-"description": "Information about a BeyoncCorp SecurityGateway resource.",
+"description": "The information about a security gateway resource.",
 "id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaSecurityGateway",
 "properties": {
 "createTime": {
 "description": "Output only. Timestamp when the resource was created.",
 "format": "google-datetime",
+"readOnly": true,
+"type": "string"
+},
+"delegatingServiceAccount": {
+"description": "Output only. Service account used for operations that involve resources in consumer projects.",
 "readOnly": true,
 "type": "string"
 },
@@ -6806,6 +5908,14 @@
 "description": "Identifier. Name of the resource.",
 "type": "string"
 },
+"proxyProtocolConfig": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaProxyProtocolConfig",
+"description": "Optional. Shared proxy configuration for all apps."
+},
+"serviceDiscovery": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscovery",
+"description": "Optional. Settings related to the Service Discovery."
+},
 "state": {
 "description": "Output only. The operational state of the SecurityGateway.",
 "enum": [
@@ -6823,7 +5933,7 @@
 "SecurityGateway is being updated.",
 "SecurityGateway is being deleted.",
 "SecurityGateway is running.",
-"SecurityGateway is down and may be restored in the future. This happens when CCFE sends ProjectState = OFF.",
+"SecurityGateway is down and may be restored in the future.",
 "SecurityGateway encountered an error and is in an indeterministic state."
 ],
 "readOnly": true,
@@ -6882,24 +5992,35 @@
 },
 "type": "object"
 },
-"GoogleCloudBeyondcorpSecuritygatewaysV1alphaSetPeeringRequest": {
-"description": "Set Peering request for creating a VPC peering between Google network and customer networks.",
-"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaSetPeeringRequest",
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscovery": {
+"description": "Settings related to the Service Discovery.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscovery",
 "properties": {
-"peerings": {
-"description": "Required. List of Peering connection information.",
-"items": {
-"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaPeering"
+"apiGateway": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGateway",
+"description": "Required. External API configuration."
+}
 },
-"type": "array"
+"type": "object"
 },
-"requestId": {
-"description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGateway": {
+"description": "If Service Discovery is done through API, defines its settings.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGateway",
+"properties": {
+"resourceOverride": {
+"$ref": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGatewayOperationDescriptor",
+"description": "Required. Enables fetching resource model updates to alter service behavior per Chrome profile."
+}
+},
+"type": "object"
+},
+"GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGatewayOperationDescriptor": {
+"description": "API operation descriptor.",
+"id": "GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGatewayOperationDescriptor",
+"properties": {
+"path": {
+"description": "Required. Contains uri path fragment where HTTP request is sent.",
 "type": "string"
-},
-"validateOnly": {
-"description": "Optional. If set, validates request by executing a dry-run which would not alter the resource in any way.",
-"type": "boolean"
 }
 },
 "type": "object"
@@ -7119,6 +6240,13 @@
 "description": "A list of operations that matches the specified filter in the request.",
 "items": {
 "$ref": "GoogleLongrunningOperation"
+},
+"type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
 },
 "type": "array"
 }
@@ -7439,17 +6567,6 @@
 "email": {
 "description": "Email address of the service account.",
 "type": "string"
-}
-},
-"type": "object"
-},
-"ShouldThrottleResponse": {
-"description": "Response message for calling ShouldThrottle",
-"id": "ShouldThrottleResponse",
-"properties": {
-"shouldThrottle": {
-"description": "Whether the port should be throttled",
-"type": "boolean"
 }
 },
 "type": "object"

@@ -168,6 +168,12 @@
 "name"
 ],
 "parameters": {
+"extraLocationTypes": {
+"description": "Optional. Do not use this field. It is unsupported and is ignored unless explicitly documented otherwise. This is primarily for internal usage.",
+"location": "query",
+"repeated": true,
+"type": "string"
+},
 "filter": {
 "description": "A filter to narrow down results to a preferred subset. The filtering language accepts strings like `\"displayName=tokyo\"`, and is documented in more detail in [AIP-160](https://google.aip.dev/160).",
 "location": "query",
@@ -1566,7 +1572,7 @@
 "operations": {
 "methods": {
 "cancel": {
-"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
+"description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.",
 "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 "httpMethod": "POST",
 "id": "migrationcenter.projects.locations.operations.cancel",
@@ -1674,6 +1680,11 @@
 "description": "The standard list page token.",
 "location": "query",
 "type": "string"
+},
+"returnPartialSuccess": {
+"description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+"location": "query",
+"type": "boolean"
 }
 },
 "path": "v1alpha1/{+name}/operations",
@@ -1831,7 +1842,7 @@
 ],
 "parameters": {
 "name": {
-"description": "Output only. Name of the preference set.",
+"description": "Output only. Name of the PreferenceSet.",
 "location": "path",
 "pattern": "^projects/[^/]+/locations/[^/]+/preferenceSets/[^/]+$",
 "required": true,
@@ -2548,7 +2559,7 @@
 }
 }
 },
-"revision": "20241014",
+"revision": "20251023",
 "rootUrl": "https://migrationcenter.googleapis.com/",
 "schemas": {
 "AddAssetsToGroupRequest": {
@@ -2561,7 +2572,7 @@
 },
 "assets": {
 "$ref": "AssetList",
-"description": "Required. List of assets to be added. The maximum number of assets that can be added in a single request is 1000."
+"description": "Required. List of assets to be added. The maximum number of assets that can be added in a single request is 2000."
 },
 "requestId": {
 "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. The server will guarantee that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
@@ -2779,6 +2790,66 @@
 "description": "Generic asset attributes.",
 "type": "object"
 },
+"awsCloudFrontDistributionDetails": {
+"$ref": "AwsCloudFrontDistributionDetails",
+"description": "Output only. Asset information specific for AWS CloudFront distributions.",
+"readOnly": true
+},
+"awsDynamodbTableDetails": {
+"$ref": "AwsDynamoDBTableDetails",
+"description": "Output only. Asset information specific for AWS DynamoDB tables.",
+"readOnly": true
+},
+"awsEcsClusterDetails": {
+"$ref": "AwsEcsClusterDetails",
+"description": "Output only. Asset information specific for AWS ECS clusters.",
+"readOnly": true
+},
+"awsEfsFileSystemDetails": {
+"$ref": "AwsEfsFileSystemDetails",
+"description": "Output only. Asset information specific for AWS EFS file systems.",
+"readOnly": true
+},
+"awsEksClusterDetails": {
+"$ref": "AwsEksClusterDetails",
+"description": "Output only. Asset information specific for AWS EKS clusters.",
+"readOnly": true
+},
+"awsElbLoadBalancerDetails": {
+"$ref": "AwsElbLoadBalancerDetails",
+"description": "Output only. Asset information specific for AWS Load Balancers.",
+"readOnly": true
+},
+"awsLambdaFunctionDetails": {
+"$ref": "AwsLambdaFunctionDetails",
+"description": "Output only. Asset information specific for AWS Lambda functions.",
+"readOnly": true
+},
+"awsNatGatewayDetails": {
+"$ref": "AwsNatGatewayDetails",
+"description": "Output only. Asset information specific for AwsNatGatewayDetails",
+"readOnly": true
+},
+"awsRedshiftDetails": {
+"$ref": "AwsRedshiftDetails",
+"description": "Output only. Asset information specific for AWS Redshift",
+"readOnly": true
+},
+"awsRoute53HostedZoneDetails": {
+"$ref": "AwsRoute53HostedZoneDetails",
+"description": "Output only. Asset information specific for AwsRoute53HostedZoneDetails",
+"readOnly": true
+},
+"awsS3BucketDetails": {
+"$ref": "AwsS3BucketDetails",
+"description": "Output only. Asset information specific for AWS S3 buckets.",
+"readOnly": true
+},
+"awsVpcDetails": {
+"$ref": "AwsVpcDetails",
+"description": "Output only. Asset information specific for AWS VPCs.",
+"readOnly": true
+},
 "createTime": {
 "description": "Output only. The timestamp when the asset was created.",
 "format": "google-datetime",
@@ -2809,6 +2880,11 @@
 "readOnly": true,
 "type": "string"
 },
+"hostingProviderDetails": {
+"$ref": "HostingProviderDetails",
+"description": "Output only. Details about the hosting provider of the asset.",
+"readOnly": true
+},
 "insightList": {
 "$ref": "InsightList",
 "description": "Output only. The list of insights associated with the asset.",
@@ -2820,6 +2896,11 @@
 },
 "description": "Labels as key value pairs.",
 "type": "object"
+},
+"machineDetails": {
+"$ref": "MachineDetails",
+"description": "Output only. Asset information specific for virtual machines.",
+"readOnly": true
 },
 "name": {
 "description": "Output only. The full name of the asset.",
@@ -2837,6 +2918,14 @@
 },
 "readOnly": true,
 "type": "array"
+},
+"structuredAttributes": {
+"additionalProperties": {
+"description": "Properties of the object.",
+"type": "any"
+},
+"description": "Optional. Generic structured asset attributes.",
+"type": "object"
 },
 "title": {
 "description": "Output only. Server generated human readable name of the asset.",
@@ -2868,6 +2957,54 @@
 "description": "Generic asset attributes.",
 "type": "object"
 },
+"awsCloudFrontDistributionDetails": {
+"$ref": "AwsCloudFrontDistributionDetails",
+"description": "Asset information specific for AWS CloudFront distributions."
+},
+"awsDynamodbTableDetails": {
+"$ref": "AwsDynamoDBTableDetails",
+"description": "Asset information specific for AWS DynamoDB tables."
+},
+"awsEcsClusterDetails": {
+"$ref": "AwsEcsClusterDetails",
+"description": "Asset information specific for AWS ECS clusters."
+},
+"awsEfsFileSystemDetails": {
+"$ref": "AwsEfsFileSystemDetails",
+"description": "Asset information specific for AWS EFS file systems."
+},
+"awsEksClusterDetails": {
+"$ref": "AwsEksClusterDetails",
+"description": "Asset information specific for AWS EKS clusters."
+},
+"awsElbLoadBalancerDetails": {
+"$ref": "AwsElbLoadBalancerDetails",
+"description": "Asset information specific for AWS Load Balancers."
+},
+"awsLambdaFunctionDetails": {
+"$ref": "AwsLambdaFunctionDetails",
+"description": "Asset information specific for AWS Lambda functions."
+},
+"awsNatGatewayDetails": {
+"$ref": "AwsNatGatewayDetails",
+"description": "Asset information specific for AwsNatGatewayDetails"
+},
+"awsRedshiftDetails": {
+"$ref": "AwsRedshiftDetails",
+"description": "Asset information specific for AWS Redshift clusters."
+},
+"awsRoute53HostedZoneDetails": {
+"$ref": "AwsRoute53HostedZoneDetails",
+"description": "Asset information specific for AwsRoute53HostedZoneDetails"
+},
+"awsS3BucketDetails": {
+"$ref": "AwsS3BucketDetails",
+"description": "Asset information specific for AWS S3 buckets."
+},
+"awsVpcDetails": {
+"$ref": "AwsVpcDetails",
+"description": "Asset information specific for AWS VPCs."
+},
 "collectionType": {
 "description": "Optional. Frame collection type, if not specified the collection type will be based on the source type of the source the frame was reported on.",
 "enum": [
@@ -2896,12 +3033,20 @@
 "$ref": "DatabaseDetails",
 "description": "Asset information specific for logical databases."
 },
+"hostingProviderDetails": {
+"$ref": "HostingProviderDetails",
+"description": "Optional. Details about the hosting provider of the asset."
+},
 "labels": {
 "additionalProperties": {
 "type": "string"
 },
 "description": "Labels as key value pairs.",
 "type": "object"
+},
+"machineDetails": {
+"$ref": "MachineDetails",
+"description": "Asset information specific for virtual and physical machines."
 },
 "performanceSamples": {
 "description": "Asset performance data samples. Samples that are from more than 40 days ago or after tomorrow are ignored.",
@@ -2914,6 +3059,14 @@
 "description": "The time the data was reported.",
 "format": "google-datetime",
 "type": "string"
+},
+"structuredAttributes": {
+"additionalProperties": {
+"description": "Properties of the object.",
+"type": "any"
+},
+"description": "Optional. Generic structured asset attributes.",
+"type": "object"
 },
 "traceToken": {
 "description": "Optional. Trace token is optionally provided to assist with debugging and traceability.",
@@ -3100,13 +3253,7 @@
 "AssetsExportJobNetworkDependencies": {
 "description": "Configuration for network dependencies exports.",
 "id": "AssetsExportJobNetworkDependencies",
-"properties": {
-"maxDays": {
-"description": "Optional. When this value is set to a positive integer, network connections data will be returned for the most recent days for which data is available. When this value is unset (or set to zero), all available data is returned.",
-"format": "int32",
-"type": "integer"
-}
-},
+"properties": {},
 "type": "object"
 },
 "AssetsExportJobPerformanceData": {
@@ -3119,6 +3266,18 @@
 "type": "integer"
 }
 },
+"type": "object"
+},
+"AwsCloudFrontDistributionDetails": {
+"description": "Details of an AWS CloudFront distribution.",
+"id": "AwsCloudFrontDistributionDetails",
+"properties": {},
+"type": "object"
+},
+"AwsDynamoDBTableDetails": {
+"description": "Details of an AWS DynamoDB table.",
+"id": "AwsDynamoDBTableDetails",
+"properties": {},
 "type": "object"
 },
 "AwsEc2PlatformDetails": {
@@ -3148,6 +3307,162 @@
 "type": "string"
 }
 },
+"type": "object"
+},
+"AwsEcsClusterDetails": {
+"description": "Details of an AWS ECS cluster.",
+"id": "AwsEcsClusterDetails",
+"properties": {},
+"type": "object"
+},
+"AwsEfsFileSystemDetails": {
+"description": "Details of an AWS EFS file system.",
+"id": "AwsEfsFileSystemDetails",
+"properties": {},
+"type": "object"
+},
+"AwsEksClusterDetails": {
+"description": "Asset information specific for AWS EKS clusters.",
+"id": "AwsEksClusterDetails",
+"properties": {},
+"type": "object"
+},
+"AwsElbLoadBalancerDetails": {
+"description": "Asset information specific for AWS Load Balancers.",
+"id": "AwsElbLoadBalancerDetails",
+"properties": {},
+"type": "object"
+},
+"AwsLambdaFunctionDetails": {
+"description": "Asset information specific for AWS Lambda functions.",
+"id": "AwsLambdaFunctionDetails",
+"properties": {},
+"type": "object"
+},
+"AwsNatGatewayDetails": {
+"description": "Details of an AWS NAT Gateway.",
+"id": "AwsNatGatewayDetails",
+"properties": {},
+"type": "object"
+},
+"AwsRds": {
+"description": "Specific details for an AWS RDS database deployment.",
+"id": "AwsRds",
+"properties": {},
+"type": "object"
+},
+"AwsRedshiftDetails": {
+"description": "Details of an AWS Redshift cluster.",
+"id": "AwsRedshiftDetails",
+"properties": {},
+"type": "object"
+},
+"AwsRoute53HostedZoneDetails": {
+"description": "Details of an AWS Route 53 Hosted Zone.",
+"id": "AwsRoute53HostedZoneDetails",
+"properties": {},
+"type": "object"
+},
+"AwsS3BucketDetails": {
+"description": "Asset information specific for AWS S3 buckets.",
+"id": "AwsS3BucketDetails",
+"properties": {
+"objectsMetadata": {
+"$ref": "AwsS3BucketDetailsObjectsMetadata",
+"description": "Optional. The metadata of the objects in the bucket."
+},
+"storageClasses": {
+"description": "Optional. The storage classes in the bucket.",
+"items": {
+"$ref": "AwsS3BucketDetailsStorageClass"
+},
+"type": "array"
+},
+"versioning": {
+"$ref": "AwsS3BucketDetailsVersioning",
+"description": "Optional. Versioning configuration of the bucket."
+}
+},
+"type": "object"
+},
+"AwsS3BucketDetailsObjectsMetadata": {
+"description": "The metadata of the objects in the bucket.",
+"id": "AwsS3BucketDetailsObjectsMetadata",
+"properties": {
+"totalObjects": {
+"$ref": "AwsS3BucketDetailsObjectsMetadataTotalObjects",
+"description": "Optional. The total number of objects in the bucket."
+}
+},
+"type": "object"
+},
+"AwsS3BucketDetailsObjectsMetadataTotalObjects": {
+"description": "Information about the total number of objects in the bucket.",
+"id": "AwsS3BucketDetailsObjectsMetadataTotalObjects",
+"properties": {
+"value": {
+"description": "Optional. The total number of objects in the bucket.",
+"format": "int32",
+"type": "integer"
+}
+},
+"type": "object"
+},
+"AwsS3BucketDetailsStorageClass": {
+"description": "Details about storage class.",
+"id": "AwsS3BucketDetailsStorageClass",
+"properties": {
+"totalBytes": {
+"description": "Optional. The total size of the storage class in bytes.",
+"format": "int64",
+"type": "string"
+},
+"type": {
+"description": "Required. Type of the storage class.",
+"enum": [
+"STORAGE_CLASS_TYPE_UNSPECIFIED",
+"STANDARD",
+"INTELLIGENT_TIERING",
+"STANDARD_IA",
+"ONE_ZONE_IA",
+"GLACIER",
+"DEEP_ARCHIVE",
+"GLACIER_IR",
+"REDUCED_REDUNDANCY",
+"EXPRESS_ONEZONE"
+],
+"enumDescriptions": [
+"Unspecified storage class type.",
+"General Purpose",
+"Represents Intelligent-Tiering's auto-tiering",
+"Standard-Infrequent Access",
+"One Zone-Infrequent Access",
+"S3 Glacier Flexible Retrieval",
+"S3 Glacier Deep Archive",
+"S3 Glacier Instant Retrieval",
+"S3 Reduced Redundancy Storage (Legacy)",
+"S3 Express One Zone"
+],
+"type": "string"
+}
+},
+"type": "object"
+},
+"AwsS3BucketDetailsVersioning": {
+"description": "Versioning configuration of the bucket.",
+"id": "AwsS3BucketDetailsVersioning",
+"properties": {
+"enabled": {
+"description": "Optional. Whether versioning is enabled.",
+"type": "boolean"
+}
+},
+"type": "object"
+},
+"AwsVpcDetails": {
+"description": "Asset information specific for AWS VPCs.",
+"id": "AwsVpcDetails",
+"properties": {},
 "type": "object"
 },
 "AzureVmPlatformDetails": {
@@ -3256,8 +3571,25 @@
 "description": "BIOS version.",
 "type": "string"
 },
+"id": {
+"description": "BIOS ID.",
+"type": "string"
+},
+"manufacturer": {
+"description": "BIOS manufacturer.",
+"type": "string"
+},
+"releaseTime": {
+"description": "BIOS release date.",
+"format": "google-datetime",
+"type": "string"
+},
 "smbiosUuid": {
 "description": "SMBIOS UUID.",
+"type": "string"
+},
+"version": {
+"description": "BIOS version.",
 "type": "string"
 }
 },
@@ -3895,6 +4227,10 @@
 "description": "Output only. Aggregated stats for the database deployment.",
 "readOnly": true
 },
+"awsRds": {
+"$ref": "AwsRds",
+"description": "Optional. Details of an AWS RDS instance."
+},
 "edition": {
 "description": "The database deployment edition.",
 "type": "string"
@@ -4505,6 +4841,14 @@
 "readOnly": true,
 "type": "string"
 },
+"recommendedVersions": {
+"description": "Output only. The recommended versions of the discovery client.",
+"items": {
+"$ref": "DiscoveryClientDiscoveryClientRecommendedVersion"
+},
+"readOnly": true,
+"type": "array"
+},
 "serviceAccount": {
 "description": "Required. Service account used by the discovery client for various operation.",
 "type": "string"
@@ -4556,16 +4900,43 @@
 },
 "type": "object"
 },
+"DiscoveryClientDiscoveryClientRecommendedVersion": {
+"description": "Discovery client recommended version.",
+"id": "DiscoveryClientDiscoveryClientRecommendedVersion",
+"properties": {
+"uri": {
+"description": "Output only. The URI of the discovery client version.",
+"readOnly": true,
+"type": "string"
+},
+"version": {
+"description": "Output only. The version of the discovery client.",
+"readOnly": true,
+"type": "string"
+}
+},
+"type": "object"
+},
 "DiskEntry": {
 "description": "Single disk entry.",
 "id": "DiskEntry",
 "properties": {
+"capacityBytes": {
+"description": "Disk capacity.",
+"format": "int64",
+"type": "string"
+},
 "diskLabel": {
 "description": "Disk label.",
 "type": "string"
 },
 "diskLabelType": {
 "description": "Disk label type (e.g. BIOS/GPT)",
+"type": "string"
+},
+"freeSpaceBytes": {
+"description": "Disk free space.",
+"format": "int64",
 "type": "string"
 },
 "hwAddress": {
@@ -4593,10 +4964,6 @@
 "description": "Disk free space.",
 "format": "int64",
 "type": "string"
-},
-"vmwareConfig": {
-"$ref": "VmwareDiskConfig",
-"description": "VMware disk details."
 }
 },
 "type": "object"
@@ -4634,7 +5001,7 @@
 "type": "string"
 },
 "mountPoint": {
-"description": "Mount pount (Linux/Windows) or drive letter (Windows).",
+"description": "Mount point (Linux/Windows) or drive letter (Windows).",
 "type": "string"
 },
 "subPartitions": {
@@ -4647,6 +5014,29 @@
 },
 "uuid": {
 "description": "Partition UUID.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"DiskPartitionDetails": {
+"description": "Disk partition details.",
+"id": "DiskPartitionDetails",
+"properties": {
+"freeSpaceBytes": {
+"description": "Output only. Total free space of all partitions.",
+"format": "int64",
+"readOnly": true,
+"type": "string"
+},
+"partitions": {
+"$ref": "DiskPartitionList",
+"description": "Optional. List of partitions."
+},
+"totalCapacityBytes": {
+"description": "Output only. Total capacity of all partitions.",
+"format": "int64",
+"readOnly": true,
 "type": "string"
 }
 },
@@ -4671,17 +5061,17 @@
 "id": "DiskUsageSample",
 "properties": {
 "averageIops": {
-"description": "Average IOPS sampled over a short window. Must be non-negative. Must be equal to the sum of read and write if one of them is positive. if both read and write are zero they are ignored.",
+"description": "Average IOPS sampled over a short window. Must be non-negative. If read or write are set, the sum of read and write will override the value of the average_iops.",
 "format": "float",
 "type": "number"
 },
 "averageReadIops": {
-"description": "Average read IOPS sampled over a short window. Must be non-negative.",
+"description": "Average read IOPS sampled over a short window. Must be non-negative. If both read and write are zero they are ignored.",
 "format": "float",
 "type": "number"
 },
 "averageWriteIops": {
-"description": "Average write IOPS sampled over a short window. Must be non-negative.",
+"description": "Average write IOPS sampled over a short window. Must be non-negative. If both read and write are zero they are ignored.",
 "format": "float",
 "type": "number"
 }
@@ -5048,6 +5438,22 @@ false
 "selinux": {
 "$ref": "Selinux",
 "description": "SELinux details."
+},
+"selinuxMode": {
+"description": "Security-Enhanced Linux (SELinux) mode.",
+"enum": [
+"SE_LINUX_MODE_UNSPECIFIED",
+"SE_LINUX_MODE_DISABLED",
+"SE_LINUX_MODE_PERMISSIVE",
+"SE_LINUX_MODE_ENFORCING"
+],
+"enumDescriptions": [
+"SELinux mode unknown or unspecified.",
+"SELinux is disabled.",
+"SELinux permissive mode.",
+"SELinux enforcing mode."
+],
+"type": "string"
 }
 },
 "type": "object"
@@ -5056,6 +5462,15 @@ false
 "description": "Guest installed application information.",
 "id": "GuestInstalledApplication",
 "properties": {
+"applicationName": {
+"description": "Installed application name.",
+"type": "string"
+},
+"installTime": {
+"description": "The time when the application was installed.",
+"format": "google-datetime",
+"type": "string"
+},
 "licenses": {
 "description": "License strings associated with the installed application.",
 "items": {
@@ -5108,9 +5523,33 @@ false
 "$ref": "GuestConfigDetails",
 "description": "OS and app configuration."
 },
+"family": {
+"description": "What family the OS belong to, if known.",
+"enum": [
+"OS_FAMILY_UNKNOWN",
+"OS_FAMILY_WINDOWS",
+"OS_FAMILY_LINUX",
+"OS_FAMILY_UNIX"
+],
+"enumDescriptions": [
+"",
+"Microsoft Windows Server and Desktop.",
+"Various Linux flavors.",
+"Non-Linux Unix flavors."
+],
+"type": "string"
+},
+"osName": {
+"description": "The name of the operating system.",
+"type": "string"
+},
 "runtime": {
 "$ref": "GuestRuntimeDetails",
 "description": "Runtime information."
+},
+"version": {
+"description": "The version of the operating system.",
+"type": "string"
 }
 },
 "type": "object"
@@ -5126,6 +5565,11 @@ false
 "installedApps": {
 "$ref": "GuestInstalledApplicationList",
 "description": "Installed applications information."
+},
+"lastBootTime": {
+"description": "Last time the OS was booted.",
+"format": "google-datetime",
+"type": "string"
 },
 "lastUptime": {
 "$ref": "Date",
@@ -5150,6 +5594,45 @@ false
 "services": {
 "$ref": "RunningServiceList",
 "description": "Running background services."
+}
+},
+"type": "object"
+},
+"HostingProviderDetails": {
+"description": "Details about the hosting platform of the asset.",
+"id": "HostingProviderDetails",
+"properties": {
+"aws": {
+"$ref": "HostingProviderDetailsAws",
+"description": "Optional. The AWS platform details."
+},
+"createTime": {
+"description": "Optional. The timestamp when resource was created in the hosting provider.",
+"format": "google-datetime",
+"type": "string"
+},
+"displayName": {
+"description": "Optional. Display name of the asset.",
+"type": "string"
+},
+"location": {
+"$ref": "ResourceLocation",
+"description": "Optional. Location of the asset."
+},
+"originalId": {
+"description": "Optional. Unique identifier for the asset in the hosting provider.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"HostingProviderDetailsAws": {
+"description": "Details for AWS platform.",
+"id": "HostingProviderDetailsAws",
+"properties": {
+"owningAccountId": {
+"description": "Optional. The AWS account ID owning the resource represented by this asset.",
+"type": "string"
 }
 },
 "type": "object"
@@ -5829,6 +6312,13 @@ false
 "$ref": "Operation"
 },
 "type": "array"
+},
+"unreachable": {
+"description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+"items": {
+"type": "string"
+},
+"type": "array"
 }
 },
 "type": "object"
@@ -5985,8 +6475,196 @@ false
 },
 "type": "object"
 },
+"MachineArchitectureDetails": {
+"description": "Details of the machine architecture.",
+"id": "MachineArchitectureDetails",
+"properties": {
+"bios": {
+"$ref": "BiosDetails",
+"description": "BIOS Details."
+},
+"cpuArchitecture": {
+"description": "CPU architecture, e.g., \"x64-based PC\", \"x86_64\", \"i686\" etc.",
+"type": "string"
+},
+"cpuManufacturer": {
+"description": "Optional. CPU manufacturer, e.g., \"Intel\", \"AMD\".",
+"type": "string"
+},
+"cpuName": {
+"description": "CPU name, e.g., \"Intel Xeon E5-2690\", \"AMD EPYC 7571\" etc.",
+"type": "string"
+},
+"cpuSocketCount": {
+"description": "Number of processor sockets allocated to the machine.",
+"format": "int32",
+"type": "integer"
+},
+"firmwareType": {
+"description": "Firmware type.",
+"enum": [
+"FIRMWARE_TYPE_UNSPECIFIED",
+"BIOS",
+"EFI"
+],
+"enumDescriptions": [
+"Unspecified or unknown.",
+"BIOS firmware.",
+"EFI firmware."
+],
+"type": "string"
+},
+"hyperthreading": {
+"description": "CPU hyper-threading support.",
+"enum": [
+"CPU_HYPER_THREADING_UNSPECIFIED",
+"DISABLED",
+"ENABLED"
+],
+"enumDescriptions": [
+"Unspecified or unknown.",
+"Hyper-threading is disabled.",
+"Hyper-threading is enabled."
+],
+"type": "string"
+},
+"vendor": {
+"description": "Hardware vendor.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"MachineDetails": {
+"description": "Details of a machine.",
+"id": "MachineDetails",
+"properties": {
+"architecture": {
+"$ref": "MachineArchitectureDetails",
+"description": "Architecture details (vendor, CPU architecture)."
+},
+"coreCount": {
+"description": "Number of logical CPU cores in the machine. Must be non-negative.",
+"format": "int32",
+"type": "integer"
+},
+"createTime": {
+"description": "Machine creation time.",
+"format": "google-datetime",
+"type": "string"
+},
+"diskPartitions": {
+"$ref": "DiskPartitionDetails",
+"description": "Optional. Disk partitions details. Note: Partitions are not necessarily mounted on local disks and therefore might not have a one-to-one correspondence with local disks."
+},
+"disks": {
+"$ref": "MachineDiskDetails",
+"description": "Disk details."
+},
+"guestOs": {
+"$ref": "GuestOsDetails",
+"description": "Guest OS information."
+},
+"machineName": {
+"description": "Machine name.",
+"type": "string"
+},
+"memoryMb": {
+"description": "The amount of memory in the machine. Must be non-negative.",
+"format": "int32",
+"type": "integer"
+},
+"network": {
+"$ref": "MachineNetworkDetails",
+"description": "Network details."
+},
+"platform": {
+"$ref": "PlatformDetails",
+"description": "Platform specific information."
+},
+"powerState": {
+"description": "Power state of the machine.",
+"enum": [
+"POWER_STATE_UNSPECIFIED",
+"PENDING",
+"ACTIVE",
+"SUSPENDING",
+"SUSPENDED",
+"DELETING",
+"DELETED"
+],
+"enumDescriptions": [
+"Power state is unknown.",
+"The machine is preparing to enter the ACTIVE state. An instance may enter the PENDING state when it launches for the first time, or when it is started after being in the SUSPENDED state.",
+"The machine is active.",
+"The machine is being turned off.",
+"The machine is off.",
+"The machine is being deleted from the hosting platform.",
+"The machine is deleted from the hosting platform."
+],
+"type": "string"
+},
+"uuid": {
+"description": "Machine unique identifier.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"MachineDiskDetails": {
+"description": "Details of machine disks.",
+"id": "MachineDiskDetails",
+"properties": {
+"disks": {
+"$ref": "DiskEntryList",
+"description": "List of disks."
+},
+"rawScanResult": {
+"description": "Raw disk scan result. This field is intended for human inspection. The format of this field may be lsblk output or any another raw output. The exact format may change without notice and should not be relied upon.",
+"type": "string"
+},
+"totalCapacityBytes": {
+"description": "Disk total Capacity.",
+"format": "int64",
+"type": "string"
+},
+"totalFreeBytes": {
+"description": "Total disk free space.",
+"format": "int64",
+"type": "string"
+}
+},
+"type": "object"
+},
+"MachineNetworkDetails": {
+"description": "Details of network adapters and settings.",
+"id": "MachineNetworkDetails",
+"properties": {
+"defaultGateway": {
+"description": "Default gateway address.",
+"type": "string"
+},
+"networkAdapters": {
+"$ref": "NetworkAdapterList",
+"description": "List of network adapters."
+},
+"primaryIpAddress": {
+"description": "The primary IP address of the machine.",
+"type": "string"
+},
+"primaryMacAddress": {
+"description": "MAC address of the machine. This property is used to uniqly identify the machine.",
+"type": "string"
+},
+"publicIpAddress": {
+"description": "The public IP address of the machine.",
+"type": "string"
+}
+},
+"type": "object"
+},
 "MachinePreferences": {
-"description": "The type of machines to consider when calculating virtual machine migration insights and recommendations for GCE. Not all machine types are available in all zones and regions.",
+"description": "The type of machines to consider when calculating virtual machine migration insights and recommendations for Compute Engine. Not all machine types are available in all zones and regions.",
 "id": "MachinePreferences",
 "properties": {
 "allowedMachineSeries": {
@@ -6265,6 +6943,13 @@ false
 "description": "List of network adapters.",
 "id": "NetworkAdapterList",
 "properties": {
+"entries": {
+"description": "Network adapter entries.",
+"items": {
+"$ref": "NetworkAdapterDetails"
+},
+"type": "array"
+},
 "networkAdapters": {
 "description": "Network adapter descriptions.",
 "items": {
@@ -6288,7 +6973,7 @@ false
 ],
 "enumDescriptions": [
 "Unknown (default value).",
-"Staticly assigned IP.",
+"Statically assigned IP.",
 "Dynamically assigned IP (DHCP)."
 ],
 "type": "string"
@@ -6317,6 +7002,13 @@ false
 "id": "NetworkAddressList",
 "properties": {
 "addresses": {
+"description": "Network address entries.",
+"items": {
+"$ref": "NetworkAddress"
+},
+"type": "array"
+},
+"entries": {
 "description": "Network address entries.",
 "items": {
 "$ref": "NetworkAddress"
@@ -6617,9 +7309,14 @@ false
 },
 "fileSizeBytes": {
 "description": "Output only. File size in bytes.",
-"format": "int32",
+"format": "int64",
 "readOnly": true,
-"type": "integer"
+"type": "string"
+},
+"xlsxOutputFile": {
+"$ref": "XlsxOutputFile",
+"description": "Output only. XLSX output file.",
+"readOnly": true
 }
 },
 "type": "object"
@@ -6869,7 +7566,7 @@ false
 "type": "string"
 },
 "name": {
-"description": "Output only. Name of the preference set.",
+"description": "Output only. Name of the PreferenceSet.",
 "readOnly": true,
 "type": "string"
 },
@@ -7460,7 +8157,8 @@ false
 "type": "string"
 },
 "allocatedDiskTypes": {
-"description": "Set of disk types allocated to assets.",
+"deprecated": true,
+"description": "@deprecated. Use storage_allocations instead. Set of disk types allocated to assets.",
 "items": {
 "enum": [
 "PERSISTENT_DISK_TYPE_UNSPECIFIED",
@@ -7633,6 +8331,17 @@ false
 },
 "type": "object"
 },
+"ResourceLocation": {
+"description": "Location of a resource.",
+"id": "ResourceLocation",
+"properties": {
+"region": {
+"description": "Optional. The name of the region.",
+"type": "string"
+}
+},
+"type": "object"
+},
 "RunAssetsExportJobRequest": {
 "description": "A request to run an assets export job.",
 "id": "RunAssetsExportJobRequest",
@@ -7702,6 +8411,13 @@ false
 "description": "List of running guest OS processes.",
 "id": "RunningProcessList",
 "properties": {
+"entries": {
+"description": "Running process entries.",
+"items": {
+"$ref": "RunningProcess"
+},
+"type": "array"
+},
 "processes": {
 "description": "Running process entries.",
 "items": {
@@ -7733,6 +8449,10 @@ false
 "format": "int64",
 "type": "string"
 },
+"serviceName": {
+"description": "Service name.",
+"type": "string"
+},
 "startMode": {
 "description": "Service start mode (raw, OS-agnostic).",
 "type": "string"
@@ -7752,6 +8472,13 @@ false
 "description": "List of running guest OS services.",
 "id": "RunningServiceList",
 "properties": {
+"entries": {
+"description": "Running service entries.",
+"items": {
+"$ref": "RunningService"
+},
+"type": "array"
+},
 "services": {
 "description": "Running service entries.",
 "items": {
@@ -7777,6 +8504,15 @@ false
 "netstatTime": {
 "$ref": "DateTime",
 "description": "Netstat time collected."
+},
+"rawScanResult": {
+"description": "Raw network scan result. This field is intended for human inspection. The format of this field may be netstat output or any another raw output. The exact format may change without notice and should not be relied upon.",
+"type": "string"
+},
+"scanTime": {
+"description": "Time of the last network scan.",
+"format": "google-datetime",
+"type": "string"
 }
 },
 "type": "object"
@@ -7818,6 +8554,10 @@ false
 "description": "Describes the Migration Center settings related to the project.",
 "id": "Settings",
 "properties": {
+"customerConsentForGoogleSalesToAccessMigrationCenter": {
+"description": "Customer consent for Google sales to access their Cloud Migration Center project.",
+"type": "boolean"
+},
 "disableCloudLogging": {
 "description": "Disable Cloud Logging for the Migration Center API. Users are billed for the logs.",
 "type": "boolean"
@@ -7854,7 +8594,22 @@ false
 "SignedUriDestination": {
 "description": "Signed URI destination configuration.",
 "id": "SignedUriDestination",
-"properties": {},
+"properties": {
+"fileFormat": {
+"description": "Required. The file format to export.",
+"enum": [
+"FILE_FORMAT_UNSPECIFIED",
+"CSV",
+"XLSX"
+],
+"enumDescriptions": [
+"Unspecified file format will be treated as CSV.",
+"CSV file format.",
+"XLSX file format which used in Excel."
+],
+"type": "string"
+}
+},
 "type": "object"
 },
 "SignedUris": {
@@ -8177,11 +8932,11 @@ false
 "id": "TimeZone",
 "properties": {
 "id": {
-"description": "IANA Time Zone Database time zone, e.g. \"America/New_York\".",
+"description": "IANA Time Zone Database time zone. For example \"America/New_York\".",
 "type": "string"
 },
 "version": {
-"description": "Optional. IANA Time Zone Database version number, e.g. \"2019a\".",
+"description": "Optional. IANA Time Zone Database version number. For example \"2019a\".",
 "type": "string"
 }
 },
@@ -8377,6 +9132,10 @@ false
 "format": "google-datetime",
 "type": "string"
 },
+"diskPartitions": {
+"$ref": "DiskPartitionDetails",
+"description": "Optional. Disk partitions details. Note: Partitions are not necessarily mounted on local disks and therefore might not have a one-to-one correspondence with local disks."
+},
 "guestOs": {
 "$ref": "GuestOsDetails",
 "description": "Guest OS information."
@@ -8531,7 +9290,7 @@ false
 },
 "computeEnginePreferences": {
 "$ref": "ComputeEnginePreferences",
-"description": "Compute Engine preferences concern insights and recommendations for Compute Engine target."
+"description": "Optional. Compute Engine preferences concern insights and recommendations for Compute Engine target."
 },
 "networkCostParameters": {
 "$ref": "VirtualMachinePreferencesNetworkCostParameters",
@@ -8642,51 +9401,6 @@ false
 },
 "type": "object"
 },
-"VmwareDiskConfig": {
-"description": "VMware disk config details.",
-"id": "VmwareDiskConfig",
-"properties": {
-"backingType": {
-"description": "VMDK backing type.",
-"enum": [
-"BACKING_TYPE_UNSPECIFIED",
-"BACKING_TYPE_FLAT_V1",
-"BACKING_TYPE_FLAT_V2",
-"BACKING_TYPE_PMEM",
-"BACKING_TYPE_RDM_V1",
-"BACKING_TYPE_RDM_V2",
-"BACKING_TYPE_SESPARSE",
-"BACKING_TYPE_SESPARSE_V1",
-"BACKING_TYPE_SESPARSE_V2"
-],
-"enumDescriptions": [
-"Default value.",
-"Flat v1.",
-"Flat v2.",
-"Persistent memory, also known as Non-Volatile Memory (NVM).",
-"Raw Disk Memory v1.",
-"Raw Disk Memory v2.",
-"SEsparse is a snapshot format introduced in vSphere 5.5 for large disks.",
-"SEsparse v1.",
-"SEsparse v1."
-],
-"type": "string"
-},
-"rdmCompatibilityMode": {
-"description": "RDM compatibility mode.",
-"type": "string"
-},
-"shared": {
-"description": "Is VMDK shared with other VMs.",
-"type": "boolean"
-},
-"vmdkDiskMode": {
-"description": "VMDK disk mode.",
-"type": "string"
-}
-},
-"type": "object"
-},
 "VmwareEngineMigrationTarget": {
 "description": "VMWare engine migration target.",
 "id": "VmwareEngineMigrationTarget",
@@ -8727,7 +9441,7 @@ false
 "type": "number"
 },
 "licenseDiscountPercentage": {
-"description": "Optional. Discount percentage for the license type offered to you by Broadcom. Must be between 0 and 100. Only valid when service_type is set to SERVICE_TYPE_PORTABLE_LICENSE.",
+"description": "Optional. Discount percentage for the license offered to you by Broadcom. Must be between 0 and 100. Only valid when service_type is set to SERVICE_TYPE_PORTABLE_LICENSE.",
 "format": "float",
 "type": "number"
 },
@@ -8741,7 +9455,7 @@ false
 "type": "number"
 },
 "serviceType": {
-"description": "Optional. VMWare Service Type (Fully Licensed or Portable License).",
+"description": "Optional. GCVE service type (fully licensed or portable license).",
 "enum": [
 "SERVICE_TYPE_UNSPECIFIED",
 "SERVICE_TYPE_FULLY_LICENSED",
@@ -8788,9 +9502,33 @@ false
 "description": "VMware os enum - https://vdc-repo.vmware.com/vmwb-repository/dcr-public/da47f910-60ac-438b-8b9b-6122f4d14524/16b7274a-bf8b-4b4c-a05e-746f2aa93c8c/doc/vim.vm.GuestOsDescriptor.GuestOsIdentifier.html.",
 "type": "string"
 },
+"vcenterFolder": {
+"description": "Folder name in vCenter where asset resides.",
+"type": "string"
+},
+"vcenterUri": {
+"description": "vCenter URI used in collection.",
+"type": "string"
+},
 "vcenterVersion": {
 "description": "vCenter version.",
 "type": "string"
+},
+"vcenterVmId": {
+"description": "vCenter VM ID.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"XlsxOutputFile": {
+"description": "Contains a single output file of type XLSX.",
+"id": "XlsxOutputFile",
+"properties": {
+"signedUri": {
+"$ref": "SignedUri",
+"description": "Output only. Signed URI destination.",
+"readOnly": true
 }
 },
 "type": "object"
