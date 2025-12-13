@@ -59,7 +59,7 @@ app.config["JSON_SORT_KEYS"] = False
 TEMPLATE_FOLDER_NAME = os.getenv("TEMPLATE_FOLDER_NAME", "template_word")
 TEMPLATE_FOLDER = pathlib.Path(__file__).parent / TEMPLATE_FOLDER_NAME
 
-# CORS
+# CORS (Relevante para el punto 1: Frontend/Amplify)
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins:
     origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
@@ -68,7 +68,7 @@ else:
     CORS(app, resources={r"/generate-word": {"origins": []}})
 
 # --------------------------
-# AWS COGNITO Config
+# AWS COGNITO Config (Control de acceso para contactos.html)
 # --------------------------
 COGNITO_USER_POOL_ID = os.getenv("us-east-2_sWJSQ4mrD")
 COGNITO_CLIENT_ID = os.getenv("4hdk0upvrq9h0p9s8v5ib1th48")
@@ -78,18 +78,19 @@ if not COGNITO_USER_POOL_ID or not COGNITO_CLIENT_ID:
     logger.error("COGNITO_USER_POOL_ID o COGNITO_CLIENT_ID no configurados.")
 
 try:
+    # Operación: Inicialización del cliente para interactuar con Cognito IDP
     cognito_client = boto3.client("cognito-idp", region_name=COGNITO_REGION)
 except Exception as e:
     logger.error(f"Error al inicializar cliente Cognito: {e}")
 
 # --------------------------
-# AWS SES Config
+# AWS SES Config (Servicio de envío de correo)
 # --------------------------
 SES_SOURCE_EMAIL = os.getenv("SES_SOURCE_EMAIL", "noreply@example.com")
 DESTINATION_EMAIL = os.getenv("DESTINATION_EMAIL")
 
 # --------------------------
-# Rate Limiting
+# Rate Limiting (Protección para la ruta /login)
 # --------------------------
 MAX_ATTEMPTS = 5
 BLOCK_TIME_SECONDS = 300
@@ -99,7 +100,7 @@ login_attempts = defaultdict(
 )
 
 # --------------------------
-# Mapeo de Servicios
+# Mapeo de Servicios (Relaciona la entrada del formulario con carpetas de plantillas)
 # --------------------------
 SERVICIO_TO_DIR = {
     "Servicios de construccion de unidades unifamiliares": "construccion_unifamiliar",
@@ -139,12 +140,14 @@ TEMPLATE_FILES = [
 # --------------------------
 # Utilidades
 # --------------------------
+
+# Operación: Normaliza y acorta el nombre del archivo para seguridad.
 def sanitize_filename(name: str) -> str:
     name = secure_filename(name)
     name = re.sub(r"[_]{2,}", "_", name)
     return name[:200]
 
-
+# Operación: Realiza la sustitución de marcadores (${KEY}) por valores en el documento (Punto 3).
 def replace_text_in_document(document, replacements):
     for paragraph in document.paragraphs:
         for key, value in replacements.items():
@@ -159,7 +162,7 @@ def replace_text_in_document(document, replacements):
                         if key in paragraph.text:
                             paragraph.text = paragraph.text.replace(key, str(value))
 
-
+# Operación: Carga la plantilla, sustituye el texto, inserta la imagen de firma y guarda en un buffer.
 def generate_single_document(template_filename, template_root, replacements, user_image_path=None, data=None):
     template_path = template_root / template_filename
 
@@ -190,7 +193,7 @@ def generate_single_document(template_filename, template_root, replacements, use
     buffer.seek(0)
     return buffer
 
-
+# Operación: Obtiene un secreto (usado para Google Service Account) de AWS Secrets Manager.
 def get_secret_value(secret_name):
     if not secret_name:
         raise EnvironmentError("Secret name not provided.")
@@ -209,8 +212,10 @@ def get_secret_value(secret_name):
         raise
 
 # --------------------------
-# Google Drive Upload
+# Google Drive Upload (Paso 5: Envía carpeta comprimida a Google Drive)
 # --------------------------
+
+# Operación: Carga las credenciales de la cuenta de servicio de Google desde variables de entorno o Secrets Manager.
 def _load_service_account_info():
     sm_name = os.getenv("GOOGLE_SERVICE_ACCOUNT_SECRET_NAME")
 
@@ -229,7 +234,7 @@ def _load_service_account_info():
 
     raise EnvironmentError("Falta GOOGLE_SERVICE_ACCOUNT")
 
-
+# Operación: Autentica usando Service Account y sube el archivo ZIP a la carpeta configurada de Drive.
 def authenticate_and_upload_to_drive(file_name, zip_buffer):
     if os.getenv("DISABLE_DRIVE_UPLOAD", "0") == "1":
         logger.info("Subida a Drive deshabilitada.")
@@ -285,8 +290,10 @@ def authenticate_and_upload_to_drive(file_name, zip_buffer):
         return {"success": False, "message": str(e)}
 
 # --------------------------
-# Envío Ses
+# Envío Ses (Paso 6: Envía correo al cliente)
 # --------------------------
+
+# Operación: Utiliza AWS SES para enviar el archivo ZIP adjunto a la dirección de correo configurada (DESTINATION_EMAIL).
 def send_email_with_attachment(zip_buffer, filename, recipient_email):
     if not recipient_email:
         logger.warning("DESTINATION_EMAIL no configurado.")
@@ -327,8 +334,10 @@ def send_email_with_attachment(zip_buffer, filename, recipient_email):
         return {"success": False, "message": f"Error general: {e}"}
 
 # --------------------------
-# Decorador Token Cognito
+# Decorador Token Cognito (Controla el acceso al formulario en contactos.html)
 # --------------------------
+
+# Operación: Revisa si la IP ha excedido el límite de intentos de login y si está bloqueada.
 def check_rate_limit(ip):
     entry = login_attempts[ip]
     now = time.time()
@@ -338,7 +347,7 @@ def check_rate_limit(ip):
 
     return True, 0
 
-
+# Operación: Registra un intento fallido y bloquea al usuario si excede el límite.
 def record_failed_attempt(ip):
     entry = login_attempts[ip]
     now = time.time()
@@ -349,7 +358,7 @@ def record_failed_attempt(ip):
     if entry["count"] >= MAX_ATTEMPTS:
         entry["blocked_until"] = now + BLOCK_TIME_SECONDS
 
-
+# Operación: Resetea el contador de intentos fallidos.
 def reset_attempts(ip):
     login_attempts[ip] = {
         "count": 0,
@@ -357,7 +366,7 @@ def reset_attempts(ip):
         "blocked_until": 0,
     }
 
-
+# Decorador: Valida el token JWT de Cognito en la cabecera Authorization para asegurar accesos controlados.
 def token_required(required_role="user"):
     def decorator(f):
         @wraps(f)
@@ -372,6 +381,7 @@ def token_required(required_role="user"):
                 return jsonify({"error": "Token faltante"}), 401
 
             try:
+                # Operación: Llama a Cognito get_user para validar el token y obtener la identidad del usuario.
                 response = cognito_client.get_user(AccessToken=token)
                 current_user = response["Username"]
 
@@ -403,7 +413,7 @@ def token_required(required_role="user"):
     return decorator
 
 # --------------------------
-# Login Cognito
+# Login Cognito (Ruta expuesta en contactos.html)
 # --------------------------
 @app.route("/login", methods=["POST"])
 def login():
@@ -424,6 +434,7 @@ def login():
         return jsonify({"error": "Falta configuración de Cognito"}), 500
 
     try:
+        # Operación: Inicia el flujo de autenticación de Cognito para validar credenciales.
         response = cognito_client.initiate_auth(
             AuthFlow="USER_PASSWORD_AUTH",
             AuthParameters={
@@ -466,10 +477,10 @@ def login():
 
 
 # --------------------------
-# generate-word (usa Cognito)
+# generate-word (Ruta principal protegida por token, implementa flujo de documentos)
 # --------------------------
 @app.route("/generate-word", methods=["POST"])
-@token_required(required_role="user")
+@token_required(required_role="user") # Acceso controlado
 def generate_word(current_user):
     logger.info(f"Solicitud de generación: {current_user}")
 
@@ -494,6 +505,7 @@ def generate_word(current_user):
 
         # Imagen temporal
         if uploaded_image and uploaded_image.filename:
+            # ... Lógica para sanear, validar tamaño y guardar imagen temporalmente ...
             filename = sanitize_filename(uploaded_image.filename)
             ext = pathlib.Path(filename).suffix.lower()
 
@@ -516,10 +528,10 @@ def generate_word(current_user):
 
             uploaded_image.save(user_image_path)
 
-        # Número aleatorio
+        # Número aleatorio (para el nombre del documento)
         numero = "".join([str(random.randint(0, 9)) for _ in range(18)])
 
-        # Reemplazos
+        # Mapeo de Reemplazos
         replacements = {
             '${descripcion_del_servicio}': servicio,
             '${razon_social}': data.get('razon_social', 'N/A'),
@@ -542,11 +554,12 @@ def generate_word(current_user):
             '${comentarios}': data.get('comentarios', 'N/A')
         }
 
-        # ZIP buffer
+        # Inicializar ZIP buffer (Paso 4: Comprime)
         zip_buffer = io.BytesIO()
 
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
             for template_filename in TEMPLATE_FILES:
+                # Operación: Genera documento individual, reemplaza texto e inserta imagen (Paso 3)
                 buffer = generate_single_document(
                     template_filename,
                     template_root,
@@ -555,6 +568,7 @@ def generate_word(current_user):
                     data=data
                 )
 
+                # Operación: Añade el documento recién generado al archivo ZIP
                 zipf.writestr(
                     f"{template_filename}",
                     buffer.getvalue()
@@ -563,14 +577,15 @@ def generate_word(current_user):
         zip_buffer.seek(0)
         final_filename = f"documentos_{numero}.zip"
 
-        # Enviar por correo
+        # Envío por correo (Paso 6)
         send_email_with_attachment(zip_buffer, final_filename, DESTINATION_EMAIL)
 
-        # Subir a drive
+        # Subir a drive (Paso 5)
         authenticate_and_upload_to_drive(final_filename, zip_buffer)
 
         zip_buffer.seek(0)
 
+        # Respuesta: Retorna el archivo ZIP al cliente del frontend (descarga final)
         return send_file(
             zip_buffer,
             as_attachment=True,
@@ -589,4 +604,5 @@ def generate_word(current_user):
 # --------------------------
 # Handler Lambda
 # --------------------------
+# Operación: Adapta la aplicación Flask para ser utilizada como un handler de AWS Lambda/API Gateway
 handler = Mangum(app)
