@@ -428,7 +428,7 @@
         IMPORTS AMPLIFY
         =========================== */
     // Asegúrate de importar 'Auth' para el inicio de sesión con Cognito.
-    import { Amplify, API, Auth } from "https://cdn.jsdelivr.net/npm/aws-amplify/+esm";
+    import { Amplify, API, Auth } from "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_sWJSQ4mrD";
 
 
     /* ===========================
@@ -459,14 +459,14 @@
             // Lo he corregido asumiendo que el ARN es un error tipográfico y el ID es necesario.
             // Si el ARN us-east-2:165046688056:userpool/us-east-2_sWJSQ4mrD es tu Client ID, déjalo. 
             // Si no, debes usar solo el Client ID (ej: 1234abcd5678efgh90ijklmn). Por ahora, lo dejo como estaba en tu script original.
-            userPoolWebClientId: "arn:aws:cognito-idp:us-east-2:165046688056:userpool/us-east-2_sWJSQ4mrD",
+            userPoolWebClientId: "4hdk0upvrq9h0p9s8v5ib1th48",
             mandatorySignIn: true
         },
         API: {
             endpoints: [
                 {
                     name: "stratantax_f_p_y-API-genword",
-                    endpoint: "https://vj3leje6ee.execute-api.us-east-2.amazonaws.com/prod",
+                    endpoint: "https://main.dx9pvdowqwjyv.amplifyapp.com/contacto.html",
                     region: "us-east-2"
                 }
             ]
@@ -478,7 +478,7 @@
         ENDPOINTS LOCALES
         =========================== */
     // NOTA: Estos endpoints ya no son necesarios para el login si usas Auth de Amplify.
-    const API_BASE_URL = "https://main.drh93y5i2fkgi.amplifyapp.com/contacto.html";
+    const API_BASE_URL = "https://main.dx9pvdowqwjyv.amplifyapp.com/contacto.html";
     const PYTHON_ENDPOINT = `${API_BASE_URL}/generate-word`;
     const LOGIN_ENDPOINT = `${API_BASE_URL}/login`; // Mantengo la línea para respetar la estructura, pero no se usará en el login.
 
